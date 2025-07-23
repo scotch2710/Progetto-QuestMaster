@@ -1,6 +1,7 @@
 import os
 import re
 import google.generativeai as genai
+import test_pddl;
 
 # --- CONFIGURAZIONE ---
 # 1. Installa la libreria: pip install google-generativeai
@@ -21,132 +22,9 @@ except KeyError:
     genai.configure(api_key=API_KEY_PLACEHOLDER)
 
 
-def create_example_lore_file(filename="lore.txt"):
-    """Crea un file lore.txt di esempio se non esiste già."""
-    if not os.path.exists(filename):
-        print(f"File '{filename}' non trovato. Ne creo uno di esempio.")
-        # (Contenuto del lore omesso per brevità, è identico alla versione precedente)
-        lore_content = """
-# Quest Description
-L'avventura si intitola "La Spada del Re Decaduto". L'eroe, Artus, deve recuperare la leggendaria spada Excalibur per reclamare il trono.
-# Initial State
-- Artus si trova nella foresta di Sherwood.
-- Excalibur è incastrata in una roccia magica al centro della foresta.
-- La roccia è protetta da un golem di pietra.
-- Artus possiede un martello da guerra.
-# Goal
-- Artus deve possedere Excalibur.
-# Obstacles
-- Il golem di pietra blocca l'accesso alla spada.
-- Il golem può essere sconfitto solo se Artus è abbastanza forte.
-- Per diventare forte, Artus deve trovare e bere una pozione della forza nascosta in una grotta.
-# Branching Factor
-- Minimo: 2 azioni possibili per stato.
-- Massimo: 4 azioni possibili per stato.
-# Depth Constraints
-- Minimo: 3 passi per la soluzione.
-- Massimo: 6 passi per la soluzione.
-"""
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write(lore_content)
-        print(f"File '{filename}' creato con successo.")
-    else:
-        print(f"Utilizzo il file '{filename}' esistente.")
 
-def create_example_pddl_files():
-    """
-    Crea file PDDL di esempio (domain e problem) se non esistono.
-    Questi file serviranno da guida per il modello LLM.
-    """
-    if not os.path.exists("domain_example.pddl"):
-        print("File 'domain_example.pddl' non trovato. Ne creo uno di esempio.")
-        domain_example_content = """; Un dominio per l'avventura della Spada del Re Decaduto
-(define (domain spada-del-re)
-  ; Definisce i requisiti base per il planning
-  (:requirements :strips)
 
-  ; Definisce i tipi di oggetti nel nostro mondo
-  (:types
-    eroe oggetto luogo creatura - object
-  )
 
-  ; Definisce i predicati, ovvero le proprietà che possono essere vere o false
-  (:predicates
-    (at ?p - object ?l - luogo) ; L'oggetto p si trova nel luogo l
-    (has ?e - eroe ?o - oggetto) ; L'eroe e possiede l'oggetto o
-    (is-strong ?e - eroe) ; L'eroe e è forte
-    (protects ?c - creatura ?o - oggetto) ; La creatura c protegge l'oggetto o
-  )
-
-  ; Azione: muoversi da un luogo all'altro
-  (:action move
-    :parameters (?e - eroe ?from - luogo ?to - luogo)
-    :precondition (and (at ?e ?from))
-    :effect (and (not (at ?e ?from)) (at ?e ?to))
-  )
-
-  ; Azione: bere una pozione per diventare forti
-  (:action drink-potion
-    :parameters (?e - eroe ?p - oggetto ?l - luogo)
-    :precondition (and (at ?e ?l) (at ?p ?l) (has ?e ?p))
-    :effect (and (is-strong ?e))
-  )
-
-  ; Azione: sconfiggere una creatura
-  (:action defeat-golem
-    :parameters (?e - eroe ?g - creatura ?s - oggetto ?l - luogo)
-    :precondition (and (at ?e ?l) (at ?g ?l) (is-strong ?e) (protects ?g ?s))
-    :effect (and (not (protects ?g ?s)))
-  )
-
-  ; Azione: prendere un oggetto
-  (:action take-sword
-    :parameters (?e - eroe ?s - oggetto ?l - luogo)
-    :precondition (and (at ?e ?l) (at ?s ?l) (not (exists (?c - creatura) (protects ?c ?s))))
-    :effect (and (has ?e ?s))
-  )
-)"""
-        with open("domain_example.pddl", "w", encoding="utf-8") as f:
-            f.write(domain_example_content)
-
-    if not os.path.exists("problem_example.pddl"):
-        print("File 'problem_example.pddl' non trovato. Ne creo uno di esempio.")
-        problem_example_content = """; File del problema per l'avventura della Spada del Re Decaduto
-(define (problem recupera-spada)
-  ; Specifica a quale dominio appartiene questo problema
-  (:domain spada-del-re)
-
-  ; Elenca tutti gli oggetti concreti che esistono in questa istanza del problema
-  (:objects
-    artus - eroe
-    excalibur pozione-forza martello - oggetto
-    foresta grotta roccia-magica - luogo
-    golem - creatura
-  )
-
-  ; Definisce lo stato iniziale del mondo
-  (:init
-    ; Posizioni iniziali
-    (at artus foresta)
-    (at pozione-forza grotta)
-    (at excalibur roccia-magica)
-    (at golem roccia-magica)
-    (at martello foresta)
-
-    ; Proprietà iniziali
-    (has artus martello)
-    (protects golem excalibur)
-  )
-
-  ; Definisce l'obiettivo da raggiungere
-  (:goal
-    (and
-      (has artus excalibur)
-    )
-  )
-)"""
-        with open("problem_example.pddl", "w", encoding="utf-8") as f:
-            f.write(problem_example_content)
 
 def extract_pddl_code(text, block_type):
     """Estrae un blocco di codice PDDL dalla risposta, cercando '(define (...))'."""
@@ -176,26 +54,85 @@ def generate_pddl_from_lore(lore_text, domain_example, problem_example):
     model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
     prompt = f"""
-    Sei un esperto di Intelligenza Artificiale specializzato in planning e PDDL.
-    Il tuo compito è tradurre una descrizione narrativa (lore) in file PDDL sintatticamente perfetti.
+    Sei un logico e un esperto di AI Planning, specializzato nella creazione di modelli PDDL robusti e semanticamente corretti a partire da descrizioni narrative.
 
-    Usa i seguenti due esempi come guida STRETTA per la sintassi, la struttura e lo stile dei commenti. Non deviare da questo formato.
+Il tuo obiettivo è analizzare un documento di "lore" e derivare un modello PDDL logicamente coerente e sintatticamente perfetto, composto da un file di dominio e uno di problema.
 
-    --- ESEMPIO DOMINIO PDDL ---
-    {domain_example}
-    --- FINE ESEMPIO DOMINIO ---
+REGOLE FONDAMENTALI DA SEGUIRE SCRUPOLOSAMENTE:
 
-    --- ESEMPIO PROBLEMA PDDL ---
-    {problem_example}
-    --- FINE ESEMPIO PROBLEMA ---
+    SEPARAZIONE DOMINIO/PROBLEMA (REGOLA PIÙ IMPORTANTE):
 
-    Ora, basandoti sulla seguente NUOVA descrizione della quest, genera un nuovo dominio e un nuovo problema PDDL.
-    Assicurati che ogni linea di codice sia commentata, esattamente come negli esempi.
-    Produci solo ed esclusivamente i due blocchi di codice PDDL, senza alcun testo aggiuntivo.
+        Il file di dominio deve essere COMPLETAMENTE GENERICO. Non deve MAI contenere nomi di oggetti specifici (es. fiona, torree, chiave_della_torre).
 
-    --- NUOVO LORE DOCUMENT ---
-    {lore_text}
-    --- FINE NUOVO LORE DOCUMENT ---
+        Usa i tipi per definire categorie e ruoli (es. personaggio, luogo, salvatore). 
+        I nomi specifici degli oggetti (le istanze) appartengono SOLO al file del problema nella sezione (:objects). Scrivere così   (:types
+    luogo
+    ponte - luogo
+    bosco - luogo
+    palude - luogo
+    torre - luogo
+    castello - luogo
+
+    personaggio
+    eroe - personaggio
+    mulo - personaggio
+    
+    oggetto
+    talismano - oggetto
+    cipolla_fumogena - oggetto
+
+    drago) è sbagliato. Nel file domain non va mai messo il tipo generico prima di quelli più particolare, devi invece scrivere così (:types
+    ponte - luogo
+    luogo
+
+    salvatore - personaggio
+    distrattore - personaggio
+    da_salvare - personaggio
+    personaggio
+    
+    oggetto
+    drago
+  ) mettendo il tipo generico dopo. Nel sezione :predicates del file domain non devi ripetere più volte gli stessi predicati come si_trova_a, ognuno può essere definito al massimo una volta.
+
+    GERARCHIA DEI TIPI E RUOLI:
+
+        Usa le gerarchie di tipi per creare relazioni logiche e assegnare ruoli. Ad esempio: salvatore - personaggio significa che un salvatore è un tipo speciale di personaggio e può fare tutto ciò che fa un personaggio, più le azioni specifiche del salvatore. Questo è il metodo corretto per limitare le azioni a certi personaggi.
+
+    AZIONI CON EFFETTI SIGNIFICATIVI:
+
+        Ogni azione (:action) deve avere un effetto (:effect) che modifica lo stato del mondo. Un'azione con un effetto vuoto (and) è inutile per un planner. L'effetto deve aggiungere o rimuovere predicati dallo stato del mondo.
+
+    PRECONDIZIONI SPECIFICHE PER EVITARE SCORCIATOIE:
+
+        Le precondizioni (:precondition) devono essere sufficientemente specifiche da evitare che il planner trovi soluzioni illogiche (come salvare Fiona nella palude). Usa i tipi/ruoli nei parametri delle azioni per limitare chi può fare cosa.
+
+PROCESSO DI GENERAZIONE CONSIGLIATO:
+
+Prima di scrivere il codice, ragiona seguendo questi passi:
+
+    Analisi del Lore: Leggi il lore e identifica le entità (personaggi, luoghi, oggetti) e i loro ruoli.
+
+    Definizione dei Tipi: Traduci queste entità e ruoli in una gerarchia di :types nel dominio.
+
+    Definizione dei Predicati: Identifica le proprietà e le relazioni che possono cambiare (es. posizione di un personaggio, porta chiusa). Traducile in :predicates.
+
+    Definizione delle Azioni: Per ogni azione possibile, definisci chiaramente i parametri, le precondizioni necessarie perché avvenga e gli effetti che produce sullo stato del mondo.
+
+    Scrittura del Codice: Solo a questo punto, scrivi i due blocchi di codice PDDL, commentando ogni linea per spiegare la tua logica, come mostrato negli esempi.
+
+--- ESEMPIO DOMINIO PDDL ---
+{domain_example}
+--- FINE ESEMPIO DOMINIO ---
+
+--- ESEMPIO PROBLEMA PDDL ---
+{problem_example}
+--- FINE ESEMPIO PROBLEMA ---
+
+Ora, basandoti sulla seguente NUOVA descrizione della quest e seguendo TUTTE le regole e i processi sopra descritti, genera un nuovo dominio e un nuovo problema PDDL.
+
+--- NUOVO LORE DOCUMENT ---
+{lore_text}
+--- FINE NUOVO LORE DOCUMENT ---
     """
 
     print("\nInvio della richiesta a Gemini con esempi... Potrebbe richiedere qualche secondo.")
@@ -232,10 +169,9 @@ def save_pddl_files(domain_pddl, problem_pddl, domain_filename="domain.pddl", pr
 if __name__ == "__main__":
     # 1. Crea o verifica l'esistenza del file di lore
     lore_filename = "lore.txt"
-    create_example_lore_file(lore_filename)
+    
 
-    # 2. Crea o verifica l'esistenza dei file PDDL di esempio
-    create_example_pddl_files()
+  
 
     # 3. Leggi il lore e gli esempi
     with open(lore_filename, "r", encoding="utf-8") as f:
@@ -253,4 +189,6 @@ if __name__ == "__main__":
         domain, problem = pddl_output
         save_pddl_files(domain, problem)
         print("\nProcesso completato! Controlla i nuovi file 'domain.pddl' e 'problem.pddl'.")
+    
+    test_pddl.check_pddl()
 

@@ -1,37 +1,20 @@
-(define (problem shrek_avventura_problema_complesso)
-  (:domain shrek_avventura)
-
-  ; Lista di tutti gli oggetti concreti, con i loro ruoli assegnati
+(define (problem cavaliere_e_principessa_problema)
+  (:domain cavaliere_e_principessa)
   (:objects
-    shrek    - salvatore
-    ciuchino - distrattore
-    fiona    - da_salvare
+    lancillotto - cavaliere
+    francescaDR - principessa
+    mostro_malvagio - mostro
     
-    palude castello bosco torree - luogo
-    ponte_pericoloso - ponte
-    chiave_della_torre - oggetto
+    fortezza bosco sushi - luogo
+    excalibur - spada
   )
-
-  ; Lo stato iniziale del mondo
   (:init
-    ; Posizioni iniziali
-    (si_trova_a shrek palude)
-    (si_trova_a ciuchino palude)
-    (si_trova_a fiona torree)
-    (si_trova_a chiave_della_torre bosco)
-
-    ; -- MODIFICA CHIAVE: Assegnamo la proprietà 'is_mobile'
-    (is_mobile shrek)
-    (is_mobile ciuchino)
-    ; Poiché (is_mobile fiona) non è presente, per il planner è falso.
-
-    ; Stati iniziali del mondo
-    
-    (drago_presente torree)
-    (porta_chiusa torree)
-    (is_key_for chiave_della_torre torree)
+    (si_trova_a lancillotto bosco)
+    (si_trova_a francescaDR fortezza)
+    (si_trova_a mostro_malvagio fortezza)
+    (si_trova_a excalibur bosco)
+    (mostro_presente fortezza)
+    (is_mobile lancillotto)
   )
-
-  ; L'obiettivo finale da raggiungere
   (:goal (and (missione_completata)))
 )

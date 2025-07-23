@@ -1,37 +1,37 @@
-; Definizione dello scenario specifico per la conquista di Milano
-(define (problem conquista-di-milano)
-  (:domain cavaliere-epico) ; Specifica le regole del mondo da usare
+(define (problem shrek_avventura_problema_complesso)
+  (:domain shrek_avventura)
 
-  ; Lista di tutti gli oggetti concreti in questo scenario
+  ; Lista di tutti gli oggetti concreti, con i loro ruoli assegnati
   (:objects
-    artu - cavaliere
-    fafnir - drago
-    cosenza bologna milano - citta
-    excalibur arco-di-legno - arma
-    destriero - mezzo_trasporto
+    shrek    - salvatore
+    ciuchino - distrattore
+    fiona    - da_salvare
+    
+    palude castello bosco torre - luogo
+    ponte_pericoloso - ponte
+    chiave_della_torre - oggetto
   )
 
   ; Lo stato iniziale del mondo
   (:init
-    ; Posizione iniziale del cavaliere
-    (si-trova-a artu cosenza)
+    ; Posizioni iniziali
+    (si_trova_a shrek palude)
+    (si_trova_a ciuchino palude)
+    (si_trova_a fiona torre)
+    (si_trova_a chiave_della_torre bosco)
 
-    ; Equipaggiamento iniziale del cavaliere
-    (ha-con-se artu excalibur)
-    (ha-con-se artu arco-di-legno)
-    (ha-cavallo artu destriero)
+    ; -- MODIFICA CHIAVE: Assegnamo la proprietà 'is_mobile'
+    (is_mobile shrek)
+    (is_mobile ciuchino)
+    ; Poiché (is_mobile fiona) non è presente, per il planner è falso.
 
-    ; Mappa del mondo
-    (percorso cosenza bologna)
-    (percorso bologna milano)
-
-    ; Stato e posizione del drago
-    (drago-vivo fafnir)
-    (si-trova-a fafnir bologna)
+    ; Stati iniziali del mondo
+    
+    (drago_presente torre)
+    (porta_chiusa torre)
+    (is_key_for chiave_della_torre torre)
   )
 
   ; L'obiettivo finale da raggiungere
-  (:goal (and
-    (citta-conquistata milano)
-  ))
+  (:goal (and (missione_completata)))
 )

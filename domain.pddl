@@ -1,75 +1,58 @@
-(define (domain shrek_avventura)
+(define (domain cavaliere_e_principessa)
   (:requirements :strips :typing :equality)
 
-  ; Tipi di entità con una gerarchia chiara per i ruoli
   (:types
-    ponte - luogo
     luogo
+    fortezza - luogo
+    bosco - luogo
+    sushi - luogo
 
-    salvatore - personaggio
-    distrattore - personaggio
-    da_salvare - personaggio
+    cavaliere - personaggio
+    mostro - personaggio
+    principessa - personaggio
     personaggio
-    
+
     oggetto
-    drago
+    spada - oggetto
   )
 
-  ; Proprietà e relazioni che descrivono lo stato del mondo
   (:predicates
     (si_trova_a ?p - object ?l - luogo)
     (ha_con_se ?p - personaggio ?o - oggetto)
-    (is_key_for ?o - oggetto ?l - luogo)
-    (drago_presente ?l - luogo)
-    (drago_distratto)
-    (fiona_liberata)
-    (porta_chiusa ?l - luogo)
+    (mostro_presente ?l - luogo)
+    (principessa_salvata)
     (missione_completata)
-    (is_mobile ?p - personaggio) ; -- MODIFICA CHIAVE: Aggiunto nuovo predicato
+    (mostro_sconfitto)
+    (is_mobile ?p - personaggio)
   )
 
-  ; Azione: Viaggiare da un luogo all'altro
   (:action viaggiare
     :parameters (?p - personaggio ?da - luogo ?a - luogo)
-    :precondition (and 
-        (si_trova_a ?p ?da)
-        (is_mobile ?p) ; -- MODIFICA CHIAVE: Per viaggiare, un personaggio deve essere mobile
-    )
+    :precondition (and (si_trova_a ?p ?da) (is_mobile ?p))
     :effect (and (not (si_trova_a ?p ?da)) (si_trova_a ?p ?a))
   )
 
-  ; Azione per raccogliere un oggetto, può farlo solo il salvatore
+  (:action combattere_mostro
+    :parameters (?c - cavaliere ?m - mostro ?l - luogo)
+    :precondition (and (si_trova_a ?c ?l) (si_trova_a ?m ?l) (mostro_presente ?l) (ha_con_se ?c spada))
+    :effect (and (not (mostro_presente ?l)) (mostro_sconfitto))
+  )
+
   (:action raccogliere_oggetto
-    :parameters (?p - salvatore ?o - oggetto ?l - luogo)
+    :parameters (?p - cavaliere ?o - oggetto ?l - luogo)
     :precondition (and (si_trova_a ?p ?l) (si_trova_a ?o ?l))
     :effect (and (ha_con_se ?p ?o) (not (si_trova_a ?o ?l)))
   )
 
-  ; Azione per aprire una porta, può farlo solo il salvatore
-  (:action aprire_porta
-      :parameters (?p - salvatore ?k - oggetto ?l - luogo)
-      :precondition (and (si_trova_a ?p ?l) (porta_chiusa ?l) (ha_con_se ?p ?k) (is_key_for ?k ?l))
-      :effect (and (not (porta_chiusa ?l)))
+  (:action salvare_principessa
+    :parameters (?c - cavaliere ?pr - principessa ?l - luogo)
+    :precondition (and (si_trova_a ?c ?l) (si_trova_a ?pr ?l) (mostro_sconfitto))
+    :effect (and (principessa_salvata))
   )
 
-  ; Azione: Distrarre il drago, può farlo solo il distrattore
-  (:action distrarre_drago
-    :parameters (?d - distrattore ?l - luogo)
-    :precondition (and (si_trova_a ?d ?l) (drago_presente ?l))
-    :effect (and (drago_distratto))
-  )
-
-  ; Azione: Salvare il personaggio, richiede un salvatore e un da_salvare
-  (:action salvare_personaggio
-    :parameters (?s - salvatore ?ds - da_salvare ?l - luogo)
-    :precondition (and (si_trova_a ?s ?l) (si_trova_a ?ds ?l) (drago_distratto) (not (porta_chiusa ?l)))
-    :effect (and (fiona_liberata))
-  )
-
-  ; Azione: Completare la missione, può farlo solo il salvatore
   (:action completare_missione
-    :parameters (?eroe - salvatore)
-    :precondition (and (fiona_liberata))
+    :parameters (?c - cavaliere)
+    :precondition (and (principessa_salvata) (si_trova_a ?pr sushi))
     :effect (and (missione_completata))
   )
 )
