@@ -51,7 +51,7 @@ def extract_pddl_code(text, block_type):
 
 def generate_pddl_from_lore(lore_text, domain_example, problem_example):
     """Usa l'API di Gemini con esempi per generare i file PDDL."""
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    model = genai.GenerativeModel('gemini-2.5-pro')
 
     prompt = f"""
     Sei un logico e un esperto di AI Planning, specializzato nella creazione di modelli PDDL robusti e semanticamente corretti a partire da descrizioni narrative.
@@ -118,7 +118,9 @@ Prima di scrivere il codice, ragiona seguendo questi passi:
 
     Definizione delle Azioni: Per ogni azione possibile, definisci chiaramente i parametri, le precondizioni necessarie perché avvenga e gli effetti che produce sullo stato del mondo.
 
-    Scrittura del Codice: Solo a questo punto, scrivi i due blocchi di codice PDDL, commentando ogni linea per spiegare la tua logica, come mostrato negli esempi.
+    Scrittura del Codice: Solo a questo punto, scrivi i due blocchi di codice PDDL, commentando ogni linea per spiegare la tua logica, come mostrato negli esempi. Devi stare molto attento 
+    al fatto che ci sia un piano per poter completare la missione, questa è la cosa più importante. Deve sempre esserci almeno un percorso nel file pddl che porti alla buona riuscita della 
+    missione.
 
 --- ESEMPIO DOMINIO PDDL ---
 {domain_example}
