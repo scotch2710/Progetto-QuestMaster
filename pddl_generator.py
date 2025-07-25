@@ -8,21 +8,10 @@ import test_pddl;
 # 2. Ottieni la tua API key da Google AI Studio (https://aistudio.google.com/app/apikey)
 # 3. Inserisci la tua API key qui sotto.
 # Per maggiore sicurezza, è consigliabile caricarla come variabile d'ambiente.
-try:
+
     # Metodo consigliato: carica la chiave da una variabile d'ambiente
-    GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
-    genai.configure(api_key=GOOGLE_API_KEY)
-except KeyError:
-    # Metodo alternativo: inserisci la chiave direttamente (meno sicuro)
-    # Sostituisci "INSERISCI_QUI_LA_TUA_API_KEY" con la tua chiave effettiva
-    API_KEY_PLACEHOLDER = "INSERISCI_QUI_LA_TUA_API_KEY"
-    if API_KEY_PLACEHOLDER == "INSERISCI_QUI_LA_TUA_API_KEY":
-        print("ERRORE: Per favore, inserisci la tua API Key di Gemini nel codice.")
-        exit()
-    genai.configure(api_key=API_KEY_PLACEHOLDER)
-
-
-
+GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
+genai.configure(api_key=GOOGLE_API_KEY)
 
 
 
