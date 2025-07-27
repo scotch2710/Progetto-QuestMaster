@@ -1,47 +1,52 @@
-(define (problem problema_cavaliere_principessa_sushi)
-  ; Collega questo problema al dominio generico definito sopra.
-  (:domain sushi_quest_generico)
+(define (problem sushi-quest-avventura-1)
+  (:domain sushi-quest)
 
-  ; Sezione :objects. Qui vengono definite le istanze specifiche del nostro lore.
-  ; I nomi sono arbitrari, ma i tipi (eroe, drago, ristorante...) devono corrispondere
-  ; a quelli del dominio per ereditare le loro proprietà e restrizioni.
+  ; --- OGGETTI ---
+  ; Qui vengono dichiarate le istanze concrete delle entità, assegnando loro i tipi/ruoli
+  ; definiti nel file di dominio.
   (:objects
-    cavaliere            - eroe        ; Il protagonista, l'unico che può combattere.
-    principessa          - personaggio ; La compagna di viaggio.
+    cavaliere - guerriero
+    principessa - compagno_viaggio
 
-    castello             - luogo       ; Il punto di partenza.
-    strada_pericolosa    - luogo       ; Il luogo intermedio dove si trova il nemico.
-    sushi_bar_del_regno  - ristorante  ; La destinazione finale.
+    castello - punto_partenza
+    foresta_del_drago - luogo
+    sushi_bar - punto_arrivo
 
-    spada_leggendaria    - arma        ; L'oggetto chiave per sconfiggere il nemico.
+    spada_leggendaria - arma
 
-    drago_famelico       - drago       ; L'antagonista che blocca la strada.
+    drago - antagonista
   )
 
-  ; Sezione :init. Definisce lo stato iniziale del mondo, la "fotografia" all'inizio della storia.
+  ; --- STATO INIZIALE ---
+  ; Definisce lo stato del mondo all'inizio della quest.
   (:init
-    ; Posizione iniziale dei personaggi.
+    ; Posizioni iniziali dei personaggi
     (si_trova_a cavaliere castello)
     (si_trova_a principessa castello)
 
-    ; Posizione iniziale del nemico.
-    (si_trova_a drago_famelico strada_pericolosa)
+    ; Posizione iniziale dell'arma (nell'armeria del castello)
+    (si_trova_a_oggetto spada_leggendaria castello)
 
-    ; Posizione iniziale dell'oggetto chiave.
-    ; La spada si trova nel castello, pronta per essere raccolta dall'eroe.
-    (si_trova_a spada_leggendaria castello)
+    ; Posizione dell'antagonista (a guardia del percorso)
+    (antagonista_presente_a drago foresta_del_drago)
 
-    ; Nota: i predicati come (nemico_sconfitto) o (missione_completata) sono 'false' di default
-    ; e non devono essere esplicitati qui.
+    ; Definizione del percorso (la mappa del mondo)
+    ; È un percorso a senso unico e ritorno.
+    (connessi castello foresta_del_drago)
+    (connessi foresta_del_drago castello)
+    (connessi foresta_del_drago sushi_bar)
+    (connessi sushi_bar foresta_del_drago)
+
+    ; Nello stato iniziale, la missione non è completa e il drago non è sconfitto.
+    ; Per la Closed World Assumption del PDDL, non è necessario dichiarare (not (missione_completata))
+    ; o (not (antagonista_sconfitto drago)).
   )
 
-  ; Sezione :goal. Definisce lo stato finale che il planner deve raggiungere.
-  ; L'obiettivo è semplice e dichiarativo, poiché tutta la logica complessa
-  ; è già stata incapsulata nelle precondizioni delle azioni nel file di dominio.
+  ; --- OBIETTIVO ---
+  ; Lo stato del mondo che il planner deve raggiungere.
   (:goal
     (and
-      ; L'unico obiettivo è che la missione sia contrassegnata come completata.
-      (missione_completata)
+      (missione_completata) ; L'unico obiettivo è che la missione sia contrassegnata come completa.
     )
   )
 )

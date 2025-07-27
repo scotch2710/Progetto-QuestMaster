@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Missione di Shrek - Un'Avventura Interattiva</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+
+        :root {
+            --primary-bg: #2c3e50;
+            --secondary-bg: #34495e;
+            --text-color: #ecf0f1;
+            --accent-color: #27ae60;
+            --button-bg: #2ecc71;
+            --button-hover-bg: #27ae60;
+            --border-color: #7f8c8d;
+            --danger-color: #c0392b;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #game-container {
+            background-color: var(--secondary-bg);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'IM Fell English SC', serif;
+            color: var(--accent-color);
+            font-size: 2.5em;
+            margin-top: 0;
+            border-bottom: 2px solid var(--button-hover-bg);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        #story-text {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            min-height: 100px;
+            text-align: justify;
+        }
+
+        #choices-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 600px) {
+            #choices-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .choice-button {
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-family: 'Lora', serif;
+            font-weight: bold;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .choice-button:hover {
+            background-color: var(--button-hover-bg);
+            transform: translateY(-2px);
+        }
+        
+        .final-choice {
+            background-color: var(--accent-color);
+        }
+        
+        .final-choice:hover {
+             background-color: var(--button-hover-bg);
+        }
+
+        .bad-ending-choice {
+            background-color: var(--danger-color);
+        }
+         .bad-ending-choice:hover {
+            background-color: #e74c3c;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main id="game-container">
+        <h1>La Missione di Shrek</h1>
+        <p id="story-text">Caricamento della storia...</p>
+        <div id="choices-container"></div>
+    </main>
+
+    <script>
+        const storyTextElement = document.getElementById('story-text');
+        const choicesContainerElement = document.getElementById('choices-container');
+
+        function startGame() {
+            showScene(1);
+        }
+
+        function showScene(sceneId) {
+            const scene = storyNodes.find(node => node.id === sceneId);
+            if (!scene) {
+                console.error(`Scena con id ${sceneId} non trovata.`);
+                return;
+            }
+
+            storyTextElement.innerText = scene.text;
+
+            while (choicesContainerElement.firstChild) {
+                choicesContainerElement.removeChild(choicesContainerElement.firstChild);
+            }
+
+            if (scene.choices) {
+                scene.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.innerText = choice.text;
+                    button.classList.add('choice-button');
+                    if (choice.styleClass) {
+                        button.classList.add(choice.styleClass);
+                    }
+                    button.addEventListener('click', () => selectChoice(choice));
+                    choicesContainerElement.appendChild(button);
+                });
+            }
+        }
+
+        function selectChoice(choice) {
+            if (choice.nextScene) {
+                showScene(choice.nextScene);
+            } else {
+                // Se non c'è nextScene, è un finale o un punto morto senza riavvio.
+                // Potremmo anche aggiungere una logica di riavvio qui.
+            }
+        }
+
+        const storyNodes = [
+            {
+                id: 1,
+                text: "La tua amata palude è stata invasa da decine di creature magiche, esiliate qui dal perfido Lord Farquaad. La tua pace è distrutta. Sei indignato e seduto sulla tua poltrona, mentre Ciuchino, un asino parlante, non smette un attimo di chiacchierare.",
+                choices: [
+                    { text: "Vai a Duloc a reclamare la palude", nextScene: 2 },
+                    { text: "Prova a cacciare le creature da solo", nextScene: 100 }
+                ]
+            },
+            {
+                id: 100,
+                text: "Passi ore a spaventare e minacciare le creature, ma sono troppe e disperate. Per ogni tre che scappano, cinque prendono il loro posto. È inutile. L'unico modo è andare alla radice del problema.",
+                choices: [
+                    { text: "Ammetti la sconfitta e vai a Duloc", nextScene: 2 }
+                ]
+            },
+            {
+                id: 2,
+                text: "Arrivi a Duloc. Lord Farquaad, vedendoti, ti fa una proposta: ti restituirà la palude se salverai la principessa Fiona, imprigionata in una torre sorvegliata da un drago.",
+                choices: [
+                    { text: "Accetta la missione", nextScene: 3 },
+                    { text: "Rifiuta e minaccia Farquaad", nextScene: 200 }
+                ]
+            },
+            {
+                id: 200,
+                text: "Tenti di intimidire Farquaad, ma lui schiocca le dita. Decine di guardie ti circondano. Nonostante la tua forza, sei sopraffatto dal numero. Vieni imprigionato nelle segrete di Duloc. FINE.",
+                choices: [
+                    { text: "Ricomincia", nextScene: 1, styleClass: 'bad-ending-choice' }
+                ]
+            },
+            {
+                id: 3,
+                text: "Accetti. Insieme a Ciuchino, ti metti in viaggio. Dopo giorni di cammino, arrivate di fronte a un vulcano attivo, sulla cui cima si erge il castello del drago. L'unico modo per attraversare il fiume di lava è un ponte di corda, vecchio e pericolante.",
+                choices: [
+                    { text: "Attraversa il ponte con coraggio", nextScene: 4 },
+                    { text: "Cerca un percorso alternativo", nextScene: 300 }
+                ]
+            },
+            {
+                id: 300,
+                text: "Cerchi per ore, ma non trovi altro passaggio. Il vulcano è un'isola di roccia e fuoco. Il tempo stringe, e il ponte sembra l'unica opzione. Perdi mezza giornata.",
+                choices: [
+                    { text: "Torna indietro e attraversa il ponte", nextScene: 4 }
+                ]
+            },
+            {
+                id: 4,
+                text: "Mentre attraversate il ponte con cautela, sentite un ruggito terrificante. Un'enorme drago femmina appare e distrugge il ponte dietro di voi! Siete intrappolati nel suo castello.",
+                choices: [
+                    { text: "Crea un diversivo per distrarre il drago", nextScene: 5 },
+                    { text: "Cerca di sgattaiolare nell'ombra", nextScene: 6 }
+                ]
+            },
+            {
+                id: 5,
+                text: "Urli a Ciuchino di fare qualcosa. Lui, terrorizzato, inizia a fare complimenti al drago, che inaspettatamente si calma e si invaghisce di lui. Approfitti della distrazione per correre verso la torre più alta.",
+                choices: [
+                    { text: "Sali in cima alla torre", nextScene: 7 }
+                ]
+            },
+            {
+                id: 6,
+                text: "Tenti di muoverti silenziosamente, ma inciampi su un'armatura, creando un gran baccano. Il drago ti individua e ti sputa contro una fiammata! Riesci a schivarla per un pelo, ma ora sei il suo bersaglio.",
+                choices: [
+                    { text: "Combatti il drago!", nextScene: 600 },
+                    { text: "Fuggi disperatamente verso la torre", nextScene: 7 }
+                ]
+            },
+            {
+                id: 600,
+                text: "Sei un orco forte, ma non puoi competere con un drago. La sua fiamma ti avvolge. La tua missione finisce qui, in un mucchio di cenere. FINE.",
+                choices: [
+                    { text: "Ricomincia", nextScene: 1, styleClass: 'bad-ending-choice' }
+                ]
+            },
+            {
+                id: 7,
+                text: "Raggiungi la cima della torre e trovi la Principessa Fiona. Non è esattamente la damigella in pericolo che ti aspettavi; è impaziente e desiderosa di andarsene. La prendi in spalla e inizi la discesa.",
+                choices: [
+                    { text: "Fuggite sfruttando l'infatuazione del drago per Ciuchino", nextScene: 8 },
+                    { text: "Cercate un'altra via d'uscita", nextScene: 800 }
+                ]
+            },
+            {
+                id: 800,
+                text: "Cercate un'uscita secondaria, ma finite in un vicolo cieco: la dispensa del drago, piena di ossa di cavalieri sfortunati. Il drago vi trova. Non c'è scampo. FINE.",
+                choices: [
+                    { text: "Ricomincia", nextScene: 1, styleClass: 'bad-ending-choice' }
+                ]
+            },
+            {
+                id: 8,
+                text: "Riuscite a fuggire dal castello. Durante il viaggio di ritorno, inizi a conoscere Fiona e scopri che avete molto in comune. Una sera, mentre vi accampate, lei si allontana con una scusa. Noti che si è nascosta in un mulino abbandonato.",
+                choices: [
+                    { text: "Seguila per vedere cosa nasconde", nextScene: 9 },
+                    { text: "Rispetta la sua privacy e resta all'accampamento", nextScene: 10 }
+                ]
+            },
+            {
+                id: 9,
+                text: "Sbircia attraverso una fessura nel mulino e vedi qualcosa di sconvolgente: al tramonto, Fiona si trasforma in un'orchessa! La sua bellezza regale lascia il posto a una figura a te molto più familiare. Ora capisci il suo segreto.",
+                choices: [
+                    { text: "Entra e parlale con comprensione", nextScene: 11 },
+                    { text: "Scappa inorridito, credendo sia un mostro", nextScene: 900 }
+                ]
+            },
+            {
+                id: 900,
+                text: "Fuggi senza voltarti. Ciuchino ti trova e ti convince che hai frainteso. Quando torni al mulino, Fiona se n'è andata, credendo che tu l'abbia abbandonata. Arrivi a Duloc da solo e a mani vuote. Farquaad ti bandisce per sempre. FINE.",
+                choices: [
+                    { text: "Ricomincia", nextScene: 1, styleClass: 'bad-ending-choice' }
+                ]
+            },
+            {
+                id: 10,
+                text: "Decidi di non impicciarti. La mattina dopo, Fiona è tornata normale, ma sembra triste e distante. Il resto del viaggio verso Duloc è silenzioso e teso. Non conosci il suo segreto, ma senti che qualcosa si è rotto tra voi.",
+                choices: [
+                    { text: "Consegna Fiona a Farquaad come pattuito", nextScene: 12 }
+                ]
+            },
+            {
+                id: 11,
+                text: "Entri nel mulino. Fiona è sorpresa e spaventata, ma tu le mostri accettazione. Le dici che pensi sia bellissima. Parlate per tutta la notte e il vostro legame diventa profondo. La mattina dopo, raggiungete le porte di Duloc.",
+                choices: [
+                    { text: "Interrompi il matrimonio e dichiara i tuoi sentimenti", nextScene: 13 },
+                    { text: "Rispetta il patto, anche se ti spezza il cuore", nextScene: 12 }
+                ]
+            },
+            {
+                id: 12,
+                text: "Consegni Fiona a Lord Farquaad. Lui ti consegna l'atto di proprietà della palude. Mentre ti allontani, senti le campane del matrimonio. Hai ottenuto ciò che volevi, ma un senso di vuoto ti attanaglia. La tua palude è di nuovo silenziosa. Troppo silenziosa. FINALE agrodolce.",
+                choices: [
+                    { text: "Ricomincia l'avventura", nextScene: 1, styleClass: 'final-choice' }
+                ]
+            },
+            {
+                id: 13,
+                text: "Irrompi al matrimonio e ti opponi. Farquaad, infuriato, ordina alle guardie di arrestarti. Ma in quel momento, il drago (chiamato da Ciuchino) sfonda le vetrate della cattedrale e ingoia Farquaad in un sol boccone. La folla è in delirio. Fiona, commossa, ti corre incontro.",
+                choices: [
+                    { text: "Scambia il bacio del vero amore con Fiona", nextScene: 14 }
+                ]
+            },
+            {
+                id: 14,
+                text: "Baci Fiona. Una luce dorata vi avvolge. La maledizione si spezza, e lei rimane permanentemente nella sua forma di orchessa, la sua 'vera forma'. Tornate alla palude, che ora è la vostra casa. Vivete felici e contenti, disturbati solo occasionalmente da Ciuchino e dal drago. FINALE MIGLIORE.",
+                choices: [
+                    { text: "Gioca di nuovo", nextScene: 1, styleClass: 'final-choice' }
+                ]
+            }
+        ];
+
+        // Start the game when the script loads
+        startGame();
+    </script>
+</body>
+</html>
