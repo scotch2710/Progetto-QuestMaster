@@ -21,3 +21,4 @@ def check_pddl():
         else:
             print("Impossibile trovare un piano.")
         
+check_pddl()
