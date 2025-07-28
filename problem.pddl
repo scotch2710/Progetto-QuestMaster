@@ -1,52 +1,56 @@
-(define (problem sushi-quest-avventura-1)
-  (:domain sushi-quest)
+(define (problem shrek-adventure-1)
+  (:domain shrek-quest-for-the-swamp)
 
-  ; --- OGGETTI ---
-  ; Qui vengono dichiarate le istanze concrete delle entità, assegnando loro i tipi/ruoli
-  ; definiti nel file di dominio.
+  ;; --- OGGETTI SPECIFICI DEL MONDO ---
+  ;; Tutte le istanze concrete di personaggi, luoghi e ostacoli.
   (:objects
-    cavaliere - guerriero
-    principessa - compagno_viaggio
+    shrek - salvatore
+    ciuchino - compagno
+    fiona - da_salvare
+    farquaad - mandante
 
-    castello - punto_partenza
-    foresta_del_drago - luogo
-    sushi_bar - punto_arrivo
+    palude_di_shrek - palude
+    castello_di_duloc - castello
+    torre_del_drago - torre
+    foresta_infestata - foresta
 
-    spada_leggendaria - arma
-
-    drago - antagonista
+    draghessa - drago
+    cavalieri_di_farquaad - cavaliere
   )
 
-  ; --- STATO INIZIALE ---
-  ; Definisce lo stato del mondo all'inizio della quest.
+  ;; --- STATO INIZIALE DEL MONDO ---
   (:init
-    ; Posizioni iniziali dei personaggi
-    (si_trova_a cavaliere castello)
-    (si_trova_a principessa castello)
+    ;; Posizione iniziale di tutti gli oggetti
+    (si_trova_a shrek palude_di_shrek)
+    (si_trova_a ciuchino palude_di_shrek)
+    (si_trova_a fiona torre_del_drago)
+    (si_trova_a farquaad castello_di_duloc)
+    (si_trova_a draghessa torre_del_drago)
+    ;; I cavalieri non hanno una posizione fissa, bloccano un percorso
+    
+    ;; Mappa del mondo: connessioni tra i luoghi
+    (collegato palude_di_shrek castello_di_duloc)
+    (collegato castello_di_duloc palude_di_shrek)
+    (collegato castello_di_duloc foresta_infestata)
+    (collegato foresta_infestata castello_di_duloc)
+    (collegato foresta_infestata torre_del_drago)
+    (collegato torre_del_drago foresta_infestata)
 
-    ; Posizione iniziale dell'arma (nell'armeria del castello)
-    (si_trova_a_oggetto spada_leggendaria castello)
+    ;; Mobilità iniziale dei personaggi
+    (is_mobile shrek)
+    (is_mobile ciuchino)
+    ;; (is_mobile fiona) è assente, quindi per il planner è FALSO.
 
-    ; Posizione dell'antagonista (a guardia del percorso)
-    (antagonista_presente_a drago foresta_del_drago)
-
-    ; Definizione del percorso (la mappa del mondo)
-    ; È un percorso a senso unico e ritorno.
-    (connessi castello foresta_del_drago)
-    (connessi foresta_del_drago castello)
-    (connessi foresta_del_drago sushi_bar)
-    (connessi sushi_bar foresta_del_drago)
-
-    ; Nello stato iniziale, la missione non è completa e il drago non è sconfitto.
-    ; Per la Closed World Assumption del PDDL, non è necessario dichiarare (not (missione_completata))
-    ; o (not (antagonista_sconfitto drago)).
+    ;; Stato degli ostacoli e della quest
+    (palude_occupata)
+    (drago_a_guardia draghessa torre_del_drago)
+    (cavalieri_bloccano_percorso cavalieri_di_farquaad foresta_infestata torre_del_drago)
   )
 
-  ; --- OBIETTIVO ---
-  ; Lo stato del mondo che il planner deve raggiungere.
-  (:goal
-    (and
-      (missione_completata) ; L'unico obiettivo è che la missione sia contrassegnata come completa.
-    )
-  )
+  ;; --- OBIETTIVO FINALE ---
+  ;; L'obiettivo primario è che la missione sia completata, il che implica che la palude sia libera.
+  ;; Si potrebbe aggiungere (legame_stabilito shrek fiona) per un finale alternativo.
+  (:goal (and
+    (missione_completata)
+  ))
 )

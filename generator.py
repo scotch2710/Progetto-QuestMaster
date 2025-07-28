@@ -2,6 +2,7 @@ import os
 import re
 import google.generativeai as genai
 import test_pddl
+import genera_html
 
 # --- CONFIGURAZIONE ---
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
@@ -31,17 +32,34 @@ def extract_pddl_code(text, block_type):
     return block_text[:end_index] if end_index != -1 else None
 
 
-def generate_pddl_from_lore(lore_text, domain_example, problem_example):
-    """Genera i file PDDL usando Gemini."""
+def generate_pddl_from_lore(lore_text, domain_example, problem_example, error_context=None):
+    """Genera i file PDDL usando Gemini, includendo un eventuale errore precedente."""
+
     model = genai.GenerativeModel('gemini-2.5-pro')
+    error_prompt_section = ""
+    
+    if error_context:
+        error_prompt_section = f"""
+        ATTENZIONE: Il precedente tentativo ha fallito o è stato rifiutato dall'utente.
+        Analizza attentamente il seguente feedback per risolvere il problema.
+
+        --- FEEDBACK / ERRORE PRECEDENTE ---
+        {error_context}
+        --- FINE FEEDBACK / ERRORE ---
+        
+        Se il feedback indica un problema LOGICO (un piano valido ma senza senso), la tua priorità è modificare le PRECONDIZIONI o gli EFFETTI delle azioni per renderlo impossibile.
+        Se il feedback indica un problema di SINTASSI, correggi la dichiarazione errata.
+        
+        Ora rigenera il PDDL correggendo il problema.
+        """
+
     prompt = f"""
-     Sei un logico e un esperto di AI Planning, specializzato nella creazione di modelli PDDL robusti e semanticamente corretti a partire da descrizioni narrative.
+    Sei un logico e un esperto di AI Planning, specializzato nella creazione di modelli PDDL robusti e semanticamente corretti a partire da descrizioni narrative.
+    Il tuo obiettivo è analizzare un documento di "lore" e derivare un modello PDDL logicamente coerente e sintatticamente perfetto.
+    
+    {error_prompt_section}
 
-Il tuo obiettivo è analizzare un documento di "lore" e derivare un modello PDDL logicamente coerente e sintatticamente perfetto, composto da un file di dominio e uno di problema.
-
-REGOLE FONDAMENTALI DA SEGUIRE SCRUPOLOSAMENTE:
-
-    SEPARAZIONE DOMINIO/PROBLEMA (REGOLA PIÙ IMPORTANTE):
+    REGOLE FONDAMENTALI DA SEGUIRE SCRUPOLOSAMENTE: SEPARAZIONE DOMINIO/PROBLEMA (REGOLA PIÙ IMPORTANTE):
 
         Il file di dominio deve essere COMPLETAMENTE GENERICO. Non deve MAI contenere nomi di oggetti specifici (es. fiona, torree, chiave_della_torre).
 
@@ -115,9 +133,16 @@ Ora, basandoti sulla seguente NUOVA descrizione della quest e seguendo TUTTE le 
 
 --- NUOVO LORE DOCUMENT ---
 {lore_text}
---- FINE NUOVO LORE DOCUMENT ---
-    """
-    print("\nInvio della richiesta a Gemini per generare i file PDDL...")
+--- FINE NUOVO LORE DOCUMENT --- """
+    
+    
+    
+    
+    
+    
+    print("\nInvio della richiesta a Gemini per generare/correggere i file PDDL...")
+    
+    
     try:
         response = model.generate_content(prompt)
         full_text = response.text
@@ -203,13 +228,69 @@ if __name__ == "__main__":
     with open("problem_example.pddl", "r", encoding="utf-8") as f:
         problem_example_data = f.read()
 
-    pddl_output = generate_pddl_from_lore(lore_data, domain_example_data, problem_example_data)
-    if pddl_output:
-        domain, problem = pddl_output
-        save_pddl_files(domain, problem)
-        result = test_pddl.check_pddl()
-        if not result:
-            print("\nNessun piano valido trovato. Avvio del Reflection Agent...")
-            reflection_agent(lore_data, domain, problem)
+    # Tentativo iniziale
+    domain, problem = generate_pddl_from_lore(lore_data, domain_example_data, problem_example_data)
+    
+    error_for_next_iteration = None
+    max_retries = 20
+    
+    for i in range(max_retries):
+        if domain and problem:
+            save_pddl_files(domain, problem)
+            status, message = test_pddl.check_pddl()
+
+            if status == "success":
+                print("\n✅ Processo completato! È stato trovato un piano valido.")
+                print(message)
+                
+                user_input = input("\nQuesto piano è logicamente corretto? (si/no): ").lower().strip()
+            
+                if user_input in ["si", "s", "yes", "y"]:
+                    print("\n🎉 Ottimo! Il piano è stato approvato. Processo completato. \nProcedo a generare il file HTML dell'avventura interattiva...")
+                    genera_html.start_generazione()
+                    break # Il piano è corretto, usciamo dal ciclo.
+                else:
+                    # Il piano è valido ma non corretto, chiediamo dettagli.
+                    details = input("Per favore, spiega perché il piano non è corretto (es. 'un personaggio non dovrebbe poter fare X'): ")
+                    error_for_next_iteration = f"""
+                    Il piano precedente era SINTATTICAMENTE VALIDO, ma LOGICAMENTE SCORRETTO secondo la validazione umana.
+                    Questo è un problema di modello (precondizioni/effetti), non di sintassi.
+
+                    PIANO RIFIUTATO DALL'UTENTE:
+                    {message}
+                
+                    MOTIVAZIONE DEL RIFIUTO:
+                    {details}
+                
+                    Per favore, modifica le azioni, le precondizioni o gli effetti nel file di dominio per impedire questo comportamento illogico.
+                    """
+                    print(f"\nFeedback registrato. Tentativo di correzione {i+1}/{max_retries}...")
+        
+
+
+
+
+
+
+            elif status == "no_plan":
+                print(f"\n⚠️ Il PDDL è valido ma non è stato trovato un piano. Tentativo di correzione {i+1}/{max_retries}...")
+                error_for_next_iteration = message
+            elif status == "error":
+                print(f"\n❌ Errore di sintassi PDDL rilevato. Tentativo di correzione {i+1}/{max_retries}...")
+                print(message) # Mostra l'errore dettagliato all'utente
+                error_for_next_iteration = message
         else:
-            print("\nProcesso completato! È stato trovato un piano valido.")
+            print("Generazione PDDL fallita. Interruzione.")
+            break
+
+        # Se siamo arrivati qui, c'è stato un errore o nessun piano. Tentiamo la rigenerazione.
+        if i < max_retries - 1:
+             domain, problem = generate_pddl_from_lore(
+                lore_data, 
+                domain_example_data, 
+                problem_example_data, 
+                error_context=error_for_next_iteration
+            )
+        else:
+            print("\nNumero massimo di tentativi di correzione raggiunto. Interruzione del processo.")
+

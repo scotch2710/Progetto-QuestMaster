@@ -93,17 +93,17 @@ def salva_html(codice_html, nome_file_output):
         print(f"Errore durante il salvataggio del file: {e}")
 
 
-if __name__ == "__main__":
+def start_generazione():
     # --- ⚙️ CONFIGURAZIONE UTENTE ---
 
     # 1. Scrivi qui le istruzioni per Gemini.
     prompt_utente = """ Create an interactive web-based narrative experience.
-    Devi generare un file html di un gioco partendo da una storia descritta nel file "test_html.txt", deve essere una pagina interattiva all'interno della quale il giocatore deve poter fare 
+    Devi generare un file html di un gioco partendo da una storia descritta nel file "lore.txt", deve essere una pagina interattiva all'interno della quale il giocatore deve poter fare 
     delle scelte, almeno 2 possibilità per livello, per proseguire la storia e arrivare all'obiettivo finale. Possono esserci anche finali negativi e percorsi nelle scelte che non portano a nulla.
     """
 
     # 2. Elenca i file di testo che vuoi usare come input.
-    file_di_testo = [ "test_html.txt"]
+    file_di_testo = [ "lore.txt"]
     
     # 3. Scegli il nome del file HTML di output.
     nome_file_output = "gioco.html"
