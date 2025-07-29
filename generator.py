@@ -217,6 +217,60 @@ def reflection_agent(lore_text, domain_pddl, problem_pddl):
         else:
             print("Ok, aggiorno il contesto con il tuo input.")
 
+def start_reflection_agent(lore_text, domain_pddl, problem_pddl, domain_example, problem_example):
+    """
+    Avvia un ciclo di chat interattivo per correggere un PDDL che non produce un piano.
+    Restituisce il nuovo (domain, problem) o (None, None) se l'utente esce.
+    """
+    print("\n--- ATTIVAZIONE REFLECTION AGENT ---")
+    print("Il PDDL è valido ma non è stato trovato un piano. Avvio sessione interattiva per risolvere problemi logici.")
+
+    # Usiamo una lista per mantenere la cronologia della conversazione con l'agente
+    conversation_history = [
+        f"Il PDDL attuale è sintatticamente valido, ma il planner non trova una soluzione. "
+        f"Questo indica un problema logico, come un obiettivo irraggiungibile o precondizioni che non possono mai essere soddisfatte. "
+        f"Analizza il lore, il dominio e il problema per identificare la causa."
+    ]
+
+    while True:
+        # Costruisci il contesto per Gemini
+        error_context = "\n".join(conversation_history)
+        
+        # Chiediamo a Gemini di analizzare e proporre una soluzione
+        domain, problem = generate_pddl_from_lore(
+            lore_text,
+            domain_example,
+            problem_example,
+            error_context=error_context
+        )
+
+        if not (domain and problem):
+            print("L'agente non è riuscito a generare una correzione valida. Uscita dal Reflection Agent.")
+            return None, None
+
+        # Mostra la nuova proposta all'utente
+        print("\n--- NUOVA PROPOSTA DALL'AGENTE ---")
+        print("Nuovo Dominio Proposto:\n", domain)
+        print("\nNuovo Problema Proposto:\n", problem)
+        
+        user_input = input(
+            "\nVuoi accettare questa nuova versione e testarla? "
+            "(scrivi 'si' per accettare, 'no' per dare un altro feedback, 'esci' per terminare): "
+        ).lower().strip()
+
+        if user_input in ["si", "s", "yes", "y"]:
+            print("Proposta accettata. Ritorno al ciclo di validazione principale...")
+            return domain, problem
+        elif user_input in ["esci", "exit"]:
+            print("Uscita dal Reflection Agent.")
+            return None, None
+        else:
+            # L'utente vuole dare altro feedback
+            feedback = input("Fornisci il tuo feedback per la prossima iterazione: ")
+            conversation_history.append(f"FEEDBACK UTENTE: {feedback}")
+            print("Feedback registrato. L'agente userà questa informazione per la prossima proposta.")
+
+
 
 # --- MAIN ---
 if __name__ == "__main__":
@@ -275,6 +329,18 @@ if __name__ == "__main__":
             elif status == "no_plan":
                 print(f"\n⚠️ Il PDDL è valido ma non è stato trovato un piano. Tentativo di correzione {i+1}/{max_retries}...")
                 error_for_next_iteration = message
+
+                # Attiva l'agente riflessivo interattivo
+                new_domain, new_problem = start_reflection_agent(
+                    lore_data, domain, problem, domain_example_data, problem_example_data
+                )
+                if new_domain and new_problem:
+                    domain, problem = new_domain, new_problem
+                    # Continua il ciclo per una nuova validazione completa
+                    continue 
+                else:
+                    print("Reflection Agent terminato senza una soluzione. Interruzione del processo.")
+                    continue
             elif status == "error":
                 print(f"\n❌ Errore di sintassi PDDL rilevato. Tentativo di correzione {i+1}/{max_retries}...")
                 print(message) # Mostra l'errore dettagliato all'utente

@@ -100,13 +100,14 @@ def start_generazione():
     prompt_utente = """ Create an interactive web-based narrative experience.
     Devi generare un file html di un gioco partendo da una storia descritta nel file "lore.txt", deve essere una pagina interattiva all'interno della quale il giocatore deve poter fare 
     delle scelte, almeno 2 possibilità per livello, per proseguire la storia e arrivare all'obiettivo finale. Possono esserci anche finali negativi e percorsi nelle scelte che non portano a nulla.
+    Usa anche i file "domain.pddl" e "problem.pddl" per modellare meglio la storia, seguire un filo logico e avere un miglior contesto.
     """
 
     # 2. Elenca i file di testo che vuoi usare come input.
-    file_di_testo = [ "lore.txt"]
+    file_di_testo = [ "lore.txt", "domain.pddl", "problem.pddl"]
     
     # 3. Scegli il nome del file HTML di output.
-    nome_file_output = "gioco.html"
+    nome_file_output = "gioco_interattivo.html"
 
     # --- ESECUZIONE SCRIPT ---
     try:
