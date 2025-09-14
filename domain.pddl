@@ -1,174 +1,138 @@
-(define (domain shrek-chronicles)
+(define (domain shrek-quest)
   (:requirements :strips :typing)
 
-  ; Tipi di entità con una gerarchia chiara per ruoli specifici.
-  ; Il tipo generico (es. personaggio) è posto dopo quelli specifici.
+  ;; Tipi di entità con una gerarchia logica per definire i ruoli.
+  ;; I tipi più specifici (es. 'torre') ereditano dal tipo più generico (es. 'luogo').
   (:types
+    torre - luogo
+    castello - luogo
+    luogo
+
     salvatore - personaggio
     compagno - personaggio
     da_salvare - personaggio
-    committente - personaggio
+    mandante - personaggio
     personaggio
 
-    drago
-    
-    oggetto_legale - oggetto
-    oggetto
-    
-    luogo
+    guardiano
   )
 
-  ; Predicati che descrivono lo stato del mondo e le relazioni tra entità.
+  ;; Predicati che descrivono lo stato del mondo. Ogni predicato rappresenta
+  ;; una proprietà o una relazione che può essere vera o falsa.
   (:predicates
-    ; --- Predicati di Posizione ---
-    (si_trova_a ?p - personaggio ?l - luogo)
-    (drago_a_guardia ?d - drago ?l - luogo)
-
-    ; --- Predicati di Possesso e Relazioni ---
-    (possiede ?p - personaggio ?o - oggetto_legale)
-    (atto_relativo_a ?o - oggetto_legale ?l - luogo)
-    (luogo_natale ?p - personaggio ?l - luogo)
-
-    ; --- Predicati di Stato (flag booleani per la progressione) ---
-    (accordo_stipulato)
-    (drago_neutralizzato ?d - drago)
-    (principessa_salvata ?p - da_salvare)
-    (principessa_consegnata ?p - da_salvare)
-    (palude_riconquistata)
-    
-    ; --- MODIFICA CHIAVE: Predicati per gestire la logica di gruppo e i personaggi statici ---
-    (compagni_di_viaggio ?p1 - personaggio ?p2 - personaggio) ; Indica se due personaggi viaggiano insieme
-    (personaggio_fermo ?p - personaggio)                      ; Impedisce a un personaggio di muoversi (es. Farquaad)
+    (si_trova_a ?obj - object ?l - luogo)            ; Un oggetto (personaggio, guardiano) si trova in un luogo.
+    (connessi ?da - luogo ?a - luogo)               ; Due luoghi sono connessi, permettendo il viaggio.
+    (palude_invasa)                                 ; Lo stato iniziale della 'casa' del salvatore.
+    (accordo_stipulato ?s - salvatore ?m - mandante)  ; Il salvatore ha un accordo con il mandante.
+    (guardiano_presente ?g - guardiano ?l - luogo)    ; Un guardiano sorveglia un luogo.
+    (guardiano_neutralizzato ?g - guardiano)          ; Il guardiano è stato sconfitto o eluso.
+    (imprigionata ?ds - da_salvare ?l - torre)      ; La persona da salvare è prigioniera in una torre.
+    (liberata ?ds - da_salvare)                     ; La persona è stata liberata.
+    (segue_eroe ?ds - da_salvare ?s - salvatore)    ; La persona salvata ora segue il salvatore.
+    (segreto_svelato ?ds - da_salvare)              ; Il segreto della persona salvata è stato rivelato.
+    (missione_completata)                           ; Lo stato finale che rappresenta il raggiungimento dell'obiettivo.
   )
 
-  ; Azione per formare il gruppo tra il salvatore e il compagno.
-  (:action formare_gruppo
-    :parameters (?s - salvatore ?c - compagno ?l - luogo)
-    :precondition (and
-      (si_trova_a ?s ?l)
-      (si_trova_a ?c ?l)
-      (not (compagni_di_viaggio ?s ?c))
-    )
-    :effect (and
-      (compagni_di_viaggio ?s ?c)
-    )
-  )
-
-  ; Azione di viaggio per il salvatore, PRIMA di trovare il suo compagno.
-  (:action viaggiare_da_soli
-    :parameters (?s - salvatore ?da - luogo ?a - luogo)
-    :precondition (and
-        (si_trova_a ?s ?da)
-        (not (personaggio_fermo ?s))
-        ; Condizione per assicurarsi che non abbia ancora un compagno
-        (not (exists (?c - compagno) (compagni_di_viaggio ?s ?c)))
-    )
-    :effect (and
-        (not (si_trova_a ?s ?da))
-        (si_trova_a ?s ?a)
-    )
-  )
-
-  ; Azione di viaggio per il gruppo (salvatore e compagno).
-  (:action viaggiare_in_gruppo
-    :parameters (?s - salvatore ?c - compagno ?da - luogo ?a - luogo)
-    :precondition (and
-        (compagni_di_viaggio ?s ?c)
-        (si_trova_a ?s ?da)
-        (si_trova_a ?c ?da)
-    )
-    :effect (and
-        (not (si_trova_a ?s ?da))
-        (si_trova_a ?s ?a)
-        (not (si_trova_a ?c ?da))
-        (si_trova_a ?c ?a)
-    )
-  )
-
-  ; Azione per stipulare l'accordo. Può avvenire solo dove si trova il committente.
+  ;; Azione: Il salvatore si reca dal mandante per stringere un patto.
   (:action stipulare_accordo
-    :parameters (?s - salvatore ?lord - committente ?doc - oggetto_legale ?l_accordo - luogo ?l_palude - luogo)
+    :parameters (?s - salvatore ?m - mandante ?l - castello)
     :precondition (and
-      (si_trova_a ?s ?l_accordo)           ; Il salvatore deve essere nel luogo dell'accordo.
-      (si_trova_a ?lord ?l_accordo)        ; Il committente deve essere nello stesso luogo.
-      (possiede ?lord ?doc)                ; Il committente deve possedere l'atto.
-      (luogo_natale ?s ?l_palude)          ; Deve esserci un luogo natale per il salvatore.
-      (atto_relativo_a ?doc ?l_palude)     ; L'atto deve essere relativo a quel luogo.
-    )
-    :effect (and (accordo_stipulato))
-  )
-
-  ; Azione del compagno per neutralizzare il drago, con l'aiuto del salvatore.
-  (:action neutralizzare_drago
-    :parameters (?c - compagno ?s - salvatore ?d - drago ?l_torre - luogo)
-    :precondition (and
-      (accordo_stipulato)
-      (si_trova_a ?c ?l_torre)
-      (si_trova_a ?s ?l_torre)
-      (drago_a_guardia ?d ?l_torre)
-      (not (drago_neutralizzato ?d))
-    )
-    :effect (and (drago_neutralizzato ?d))
-  )
-
-  ; Azione del salvatore per salvare la principessa.
-  (:action salvare_principessa
-    :parameters (?s - salvatore ?p - da_salvare ?d - drago ?l_torre - luogo)
-    :precondition (and
-      (accordo_stipulato)
-      (si_trova_a ?s ?l_torre)
-      (si_trova_a ?p ?l_torre)
-      (drago_neutralizzato ?d)
-    )
-    :effect (and (principessa_salvata ?p))
-  )
-
-  ; Azione per scortare la principessa. L'intero gruppo viaggia insieme.
-  (:action scortare_principessa
-    :parameters (?s - salvatore ?p - da_salvare ?c - compagno ?da - luogo ?a - luogo)
-    :precondition (and
-        (principessa_salvata ?p)
-        (compagni_di_viaggio ?s ?c)
-        (si_trova_a ?s ?da)
-        (si_trova_a ?p ?da)
-        (si_trova_a ?c ?da)
+      (si_trova_a ?s ?l) ; Il salvatore deve essere nel castello del mandante.
+      (si_trova_a ?m ?l) ; Anche il mandante deve essere lì.
+      (palude_invasa)    ; L'accordo è motivato dall'invasione.
+      (not (accordo_stipulato ?s ?m)) ; L'accordo non deve essere già stato fatto.
     )
     :effect (and
-        (not (si_trova_a ?s ?da))
-        (si_trova_a ?s ?a)
-        (not (si_trova_a ?p ?da))
-        (si_trova_a ?p ?a)
-        (not (si_trova_a ?c ?da))
-        (si_trova_a ?c ?a)
+      (accordo_stipulato ?s ?m) ; L'effetto è che ora l'accordo esiste.
     )
   )
 
-  ; Azione per consegnare la principessa e completare l'accordo.
-  (:action consegnare_principessa
-    :parameters (?s - salvatore ?p - da_salvare ?lord - committente ?l - luogo)
+  ;; Azione: Un singolo personaggio si sposta tra due luoghi connessi.
+  (:action viaggiare
+    :parameters (?p - personaggio ?da - luogo ?a - luogo)
     :precondition (and
-      (principessa_salvata ?p)
-      (si_trova_a ?s ?l)
-      (si_trova_a ?p ?l)
-      (si_trova_a ?lord ?l)
-    )
-    :effect (and (principessa_consegnata ?p))
-  )
-
-  ; Azione finale: il salvatore ottiene la proprietà del suo luogo natale.
-  (:action riconquistare_palude
-    :parameters (?s - salvatore ?lord - committente ?doc - oggetto_legale ?l_consegna - luogo)
-    :precondition (and
-      (exists (?p - da_salvare) (principessa_consegnata ?p))
-      (accordo_stipulato)
-      (si_trova_a ?s ?l_consegna)
-      (si_trova_a ?lord ?l_consegna)
-      (possiede ?lord ?doc)
+      (si_trova_a ?p ?da) ; Il personaggio deve essere nel luogo di partenza.
+      (connessi ?da ?a)   ; I due luoghi devono essere direttamente collegati.
     )
     :effect (and
-      (palude_riconquistata)
-      (not (possiede ?lord ?doc))
-      (possiede ?s ?doc)
+      (not (si_trova_a ?p ?da)) ; Il personaggio non è più nel luogo di partenza.
+      (si_trova_a ?p ?a)        ; Il personaggio è ora nel luogo di arrivo.
+    )
+  )
+
+  ;; Azione: Il salvatore e il suo compagno collaborano per neutralizzare il guardiano.
+  (:action neutralizzare_guardiano
+    :parameters (?s - salvatore ?c - compagno ?g - guardiano ?l - luogo)
+    :precondition (and
+      (si_trova_a ?s ?l) ; Il salvatore deve essere sul posto.
+      (si_trova_a ?c ?l) ; Anche il compagno deve essere sul posto.
+      (guardiano_presente ?g ?l) ; Il guardiano deve essere lì.
+      (not (guardiano_neutralizzato ?g)) ; E non deve essere già stato neutralizzato.
+    )
+    :effect (and
+      (guardiano_neutralizzato ?g) ; Il guardiano è ora neutralizzato.
+    )
+  )
+
+  ;; Azione: Il salvatore libera la persona imprigionata.
+  (:action salvare_persona
+    :parameters (?s - salvatore ?ds - da_salvare ?g - guardiano ?t - torre)
+    :precondition (and
+      (si_trova_a ?s ?t) ; Il salvatore deve essere nella torre.
+      (imprigionata ?ds ?t) ; La persona deve essere imprigionata in QUELLA torre.
+      (guardiano_presente ?g ?t) ; Il guardiano di quella torre...
+      (guardiano_neutralizzato ?g) ; ...deve essere stato neutralizzato.
+    )
+    :effect (and
+      (not (imprigionata ?ds ?t)) ; Non è più imprigionata.
+      (liberata ?ds)              ; È ufficialmente libera.
+      (segue_eroe ?ds ?s)         ; Ora segue il suo salvatore.
+      (si_trova_a ?ds ?t)         ; La sua posizione è ora esplicita e uguale a quella del salvatore.
+    )
+  )
+
+  ;; Azione: Il salvatore e la persona salvata viaggiano insieme.
+  (:action viaggiare_in_gruppo
+    :parameters (?s - salvatore ?ds - da_salvare ?da - luogo ?a - luogo)
+    :precondition (and
+      (si_trova_a ?s ?da)       ; Il salvatore è nel luogo di partenza.
+      (si_trova_a ?ds ?da)      ; Anche la persona salvata è lì.
+      (segue_eroe ?ds ?s)     ; E sta seguendo il salvatore.
+      (connessi ?da ?a)       ; I luoghi sono connessi.
+    )
+    :effect (and
+      (not (si_trova_a ?s ?da))
+      (si_trova_a ?s ?a)
+      (not (si_trova_a ?ds ?da))
+      (si_trova_a ?ds ?a)
+    )
+  )
+
+  ;; Azione: La persona salvata rivela il suo segreto al salvatore durante il viaggio.
+  (:action svelare_segreto
+      :parameters (?s - salvatore ?ds - da_salvare)
+      :precondition (and
+          (segue_eroe ?ds ?s)            ; Può accadere solo dopo che si è creato un legame.
+          (not (segreto_svelato ?ds))    ; Il segreto non deve essere già stato svelato.
+      )
+      :effect (and
+          (segreto_svelato ?ds)         ; Ora il segreto è noto.
+      )
+  )
+
+  ;; Azione: Il salvatore consegna la persona salvata al mandante per completare la missione.
+  (:action completare_missione
+    :parameters (?s - salvatore ?ds - da_salvare ?m - mandante ?l - castello)
+    :precondition (and
+      (si_trova_a ?s ?l) ; Il salvatore deve essere nel castello del mandante.
+      (si_trova_a ?ds ?l) ; La persona salvata deve essere con lui.
+      (si_trova_a ?m ?l) ; Il mandante deve essere presente per verificare.
+      (liberata ?ds) ; La persona deve essere stata effettivamente liberata.
+      (accordo_stipulato ?s ?m) ; Deve esistere un accordo da onorare.
+    )
+    :effect (and
+      (not (palude_invasa)) ; La ricompensa: la palude non è più invasa.
+      (missione_completata)   ; La missione è ufficialmente conclusa.
     )
   )
 )

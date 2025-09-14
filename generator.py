@@ -229,7 +229,7 @@ def start_reflection_agent(lore_text, domain_pddl, problem_pddl, domain_example,
     conversation_history = [
         f"Il PDDL attuale è sintatticamente valido, ma il planner non trova una soluzione. "
         f"Questo indica un problema logico, come un obiettivo irraggiungibile o precondizioni che non possono mai essere soddisfatte. "
-        f"Analizza il lore, il dominio e il problema per identificare la causa."
+        f"Analizza il file lore, il dominio e il problema per identificare la causa."
     ]
 
     while True:
@@ -294,13 +294,13 @@ if __name__ == "__main__":
             status, message = test_pddl.check_pddl()
 
             if status == "success":
-                print("\n✅ Processo completato! È stato trovato un piano valido.")
+                print("\nProcesso completato! È stato trovato un piano valido.")
                 print(message)
                 
                 user_input = input("\nQuesto piano è logicamente corretto? (si/no): ").lower().strip()
             
                 if user_input in ["si", "s", "yes", "y"]:
-                    print("\n🎉 Ottimo! Il piano è stato approvato. Processo completato. \nProcedo a generare il file HTML dell'avventura interattiva...")
+                    print("\nOttimo! Il piano è stato approvato. Processo completato. \nProcedo a generare il file HTML dell'avventura interattiva...")
                     genera_html.start_generazione()
                     break # Il piano è corretto, usciamo dal ciclo.
                 else:
@@ -327,7 +327,7 @@ if __name__ == "__main__":
 
 
             elif status == "no_plan":
-                print(f"\n⚠️ Il PDDL è valido ma non è stato trovato un piano. Tentativo di correzione {i+1}/{max_retries}...")
+                print(f"\nIl PDDL è valido ma non è stato trovato un piano. Tentativo di correzione {i+1}/{max_retries}...")
                 error_for_next_iteration = message
 
                 # Attiva l'agente riflessivo interattivo

@@ -44,7 +44,7 @@ def genera_html_con_gemini(prompt_utente, contenuto_testo):
     Returns:
         str: Il codice HTML generato dal modello.
     """
-    print("🤖 Invio della richiesta a Gemini...")
+    print("Invio della richiesta a Gemini...")
 
     # Istruzioni precise per il modello per ottenere solo codice pulito
     prompt_completo = f"""
@@ -74,7 +74,7 @@ def genera_html_con_gemini(prompt_utente, contenuto_testo):
     if html_generato.endswith("```"):
         html_generato = html_generato[:-3]
 
-    print("✅ Codice HTML generato con successo!")
+    print("Codice HTML generato con successo!")
     return html_generato.strip()
 
 def salva_html(codice_html, nome_file_output):
@@ -88,13 +88,13 @@ def salva_html(codice_html, nome_file_output):
     try:
         with open(nome_file_output, 'w', encoding='utf-8') as f:
             f.write(codice_html)
-        print(f"💾 File salvato con successo come: {nome_file_output}")
+        print(f"File salvato con successo come: {nome_file_output}")
     except IOError as e:
         print(f"Errore durante il salvataggio del file: {e}")
 
 
 def start_generazione():
-    # --- ⚙️ CONFIGURAZIONE UTENTE ---
+    # ---  CONFIGURAZIONE UTENTE ---
 
     # 1. Scrivi qui le istruzioni per Gemini.
     prompt_utente = """ Create an interactive web-based narrative experience.
