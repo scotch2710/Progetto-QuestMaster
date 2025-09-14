@@ -1,56 +1,56 @@
-(define (problem shrek-deve-salvare-fiona)
-  (:domain shrek-quest)
+(define (problem shrek_avventura_a_duloc)
+  (:domain shrek_quest)
 
-  ;; Lista di tutti gli oggetti concreti del mondo, con i loro tipi/ruoli assegnati.
-  ;; Qui compaiono i nomi propri (Shrek, Fiona, etc.).
+  ;; Oggetti: istanze concrete dei tipi definiti nel dominio.
+  ;; Qui compaiono i nomi propri dei personaggi, luoghi e ostacoli.
   (:objects
     shrek - salvatore
-    ciuchino - compagno
+    ciuchino - aiutante
     fiona - da_salvare
     farquaad - mandante
-    drago - guardiano
 
-    palude foresta ponte_pericolante - luogo
-    torre_del_drago - torre
+    palude_di_shrek - palude
     duloc - castello
+    torre_del_drago - torre
+    foresta_oscura - foresta
+
+    drago_rosso - drago
+    cavalieri_di_farquaad - cavaliere
   )
 
-  ;; Descrizione dello stato iniziale del mondo.
+  ;; Stato Iniziale: la configurazione del mondo all'inizio della storia.
   (:init
-    ;; Posizioni iniziali di tutti i personaggi e del guardiano.
-    (si_trova_a shrek palude)
-    (si_trova_a ciuchino palude)
+    ;; Posizione iniziale dei personaggi
+    (si_trova_a shrek palude_di_shrek)
+    (si_trova_a ciuchino palude_di_shrek)
     (si_trova_a farquaad duloc)
-    (si_trova_a drago torre_del_drago)
-    ;; La posizione di Fiona è implicitamente definita dal predicato (imprigionata).
+    
+    ;; Stato iniziale di Fiona
+    (imprigionato fiona torre_del_drago)
 
-    ;; Mappa del mondo: definisce le connessioni tra i luoghi.
-    ;; Le connessioni sono definite in entrambe le direzioni per permettere il viaggio di ritorno.
-    (connessi palude foresta)
-    (connessi foresta palude)
-    (connessi foresta ponte_pericolante)
-    (connessi ponte_pericolante foresta)
-    (connessi ponte_pericolante torre_del_drago)
-    (connessi torre_del_drago ponte_pericolante)
-    (connessi palude duloc)
-    (connessi duloc palude)
+    ;; Posizione degli ostacoli
+    (ostacolo_presente drago_rosso torre_del_drago)
+    (ostacolo_presente cavalieri_di_farquaad foresta_oscura)
 
-    ;; Stato iniziale delle condizioni del mondo e dei personaggi.
-    (palude_invasa) ; La palude di Shrek è invasa dalle creature magiche.
-    (imprigionata fiona torre_del_drago) ; Fiona è prigioniera nella sua torre.
-    (guardiano_presente drago torre_del_drago) ; Il drago sorveglia la torre.
+    ;; Mappa del mondo (connessioni tra luoghi)
+    ;; Assumiamo un percorso logico per la quest
+    (connesso palude_di_shrek duloc)
+    (connesso duloc palude_di_shrek)
+
+    (connesso duloc foresta_oscura)
+    (connesso foresta_oscura duloc)
+
+    (connesso foresta_oscura torre_del_drago)
+    (connesso torre_del_drago foresta_oscura)
+    
+    ;; Il problema che innesca la storia
+    (palude_disturbata)
   )
 
-  ;; L'obiettivo finale che il planner deve raggiungere.
-  ;; L'obiettivo è semplice e chiaro: la missione deve essere completata.
-  ;; Il predicato (missione_completata) implica che la palude sia stata liberata,
-  ;; come definito nell'effetto dell'azione 'completare_missione'.
-  (:goal
-    (and
+  ;; Obiettivo Finale: lo stato del mondo che il planner deve raggiungere.
+  (:goal 
+    (and 
       (missione_completata)
-      ;; Aggiungiamo 'segreto_svelato' come parte dell'obiettivo per riflettere
-      ;; la profondità narrativa desiderata.
-      (segreto_svelato fiona)
     )
   )
 )

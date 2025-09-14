@@ -5,51 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Missione di Shrek</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital@0;1&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=MedievalSharp&display=swap');
+
+        :root {
+            --background-color: #3a5a40; /* Verde foresta scuro */
+            --container-bg: #f5e8c9; /* Pergamena chiara */
+            --text-color: #4a2c2a; /* Marrone scuro, quasi nero */
+            --button-bg: #588157; /* Verde medio */
+            --button-hover-bg: #344e41; /* Verde più scuro */
+            --button-text-color: #ffffff;
+            --border-color: #a3b18a; /* Verde salvia */
+        }
 
         body {
-            background-color: #3a4d39;
-            color: #e8e6e3;
-            font-family: 'Lora', serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'IM Fell English', serif;
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
             box-sizing: border-box;
         }
 
         #game-container {
+            background-color: var(--container-bg);
+            border: 5px solid var(--border-color);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            padding: 30px;
             width: 100%;
             max-width: 800px;
-            background-color: #556b2f;
-            border: 5px solid #2e4600;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
-            padding: 30px;
             text-align: center;
         }
 
         h1 {
-            font-family: 'Cinzel', serif;
-            color: #f0e68c;
-            text-shadow: 2px 2px 4px #000;
-            border-bottom: 2px solid #f0e68c;
-            padding-bottom: 10px;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 2.8em;
             margin-top: 0;
+            color: var(--button-hover-bg);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
         }
 
         #story-text {
-            font-size: 1.2em;
+            font-size: 1.4em;
             line-height: 1.6;
-            text-align: justify;
-            min-height: 150px;
             margin-bottom: 30px;
-            padding: 15px;
-            background-color: rgba(0,0,0,0.2);
-            border-radius: 8px;
-            border-left: 3px solid #f0e68c;
+            text-align: justify;
         }
 
         #choices {
@@ -58,237 +63,361 @@
             gap: 15px;
         }
 
+        .choice-btn {
+            background-color: var(--button-bg);
+            color: var(--button-text-color);
+            border: 2px solid var(--button-hover-bg);
+            border-radius: 8px;
+            padding: 15px 20px;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .choice-btn:hover {
+            background-color: var(--button-hover-bg);
+            transform: translateY(-2px);
+        }
+
+        .ending {
+            font-style: italic;
+            font-weight: bold;
+            color: var(--button-hover-bg);
+        }
+
         @media (min-width: 600px) {
             #choices {
                 grid-template-columns: 1fr 1fr;
             }
         }
-
-        .choice-btn {
-            background-color: #8b4513;
-            color: #ffffff;
-            border: 2px solid #5d2906;
-            border-radius: 8px;
-            padding: 15px 20px;
-            font-family: 'Cinzel', serif;
-            font-size: 1em;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-            text-shadow: 1px 1px 2px #000;
-        }
-
-        .choice-btn:hover {
-            background-color: #a0522d;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-        }
-
-        .choice-btn:active {
-            transform: translateY(0);
-        }
-
     </style>
 </head>
 <body>
 
-    <main id="game-container">
+    <div id="game-container">
         <h1>La Missione di Shrek</h1>
         <div id="story-text">
             Caricamento della storia...
         </div>
         <div id="choices">
-            <!-- I bottoni delle scelte verranno inseriti qui dal JavaScript -->
+            <!-- I bottoni delle scelte verranno inseriti qui da JavaScript -->
         </div>
-    </main>
+    </div>
 
     <script>
         const storyTextElement = document.getElementById('story-text');
         const choicesElement = document.getElementById('choices');
 
-        const story = {
-            start: {
-                text: "Nel regno di Duloc, tutte le creature magiche sono state esiliate nella tua palude. La tua pace è stata invasa da fate, lupi e maialini. Indignato, decidi che è ora di agire.",
-                choices: [
-                    { text: "Vai a Duloc per parlare con Lord Farquaad.", nextScene: 'goToDuloc' },
-                    { text: "Prova a scacciare le creature da solo.", nextScene: 'failToClearSwamp' }
-                ]
-            },
-            failToClearSwamp: {
-                text: "Provi a spaventarli con il tuo ruggito più potente, ma sono troppi e semplicemente ti ignorano. È inutile. La tua palude è ancora invasa.",
-                choices: [
-                    { text: "Rassegnati e vai a Duloc.", nextScene: 'goToDuloc' },
-                    { text: "Riprova con più rabbia.", nextScene: 'failToClearSwamp' }
-                ]
-            },
-            goToDuloc: {
-                text: "Arrivi al castello di Duloc e incontri il perfido Lord Farquaad. Ti propone un accordo: libererà la tua palude se tu salverai per lui la principessa Fiona, imprigionata in una torre sorvegliata da un drago.",
-                choices: [
-                    { text: "Accetta l'accordo: la palude vale bene una principessa.", nextScene: 'startJourney' },
-                    { text: "Rifiuta e torna alla palude invasa.", nextScene: 'backToSwamp' }
-                ]
-            },
-            backToSwamp: {
-                text: "Rifiuti l'accordo di Farquaad e torni a casa. La tua palude rimane un caotico rifugio per creature magiche, e la tua quiete è perduta per sempre. FINE.",
-                choices: [
-                    { text: "Ricomincia l'avventura.", nextScene: 'start' }
-                ]
-            },
-            startJourney: {
-                text: "Accetti la missione. Insieme a un ciarliero asino di nome Ciuchino, ti metti in viaggio. Il sentiero per la torre del drago attraversa una foresta oscura e piena di pericoli.",
-                choices: [
-                    { text: "Segui il sentiero principale, più veloce ma esposto.", nextScene: 'meetKnights' },
-                    { text: "Prendi una scorciatoia tra i fitti alberi.", nextScene: 'darkWoodsPath' }
-                ]
-            },
-            meetKnights: {
-                text: "Sul sentiero principale incontrate una pattuglia di cavalieri di Farquaad. Non sembrano amichevoli.",
-                choices: [
-                    { text: "Combatti i cavalieri con la tua forza da orco.", nextScene: 'knightsDefeated' },
-                    { text: "Nascondetevi e aspettate che passino.", nextScene: 'knightsDefeated' }
-                ]
-            },
-            darkWoodsPath: {
-                text: "La scorciatoia si rivela un labirinto di rovi e sentieri ingannevoli. Perdete tempo prezioso, ma alla fine riuscite a uscirne. Davanti a voi, un ponte pericolante sospeso su un fiume di lava conduce alla torre.",
-                choices: [
-                    { text: "Prosegui verso il ponte.", nextScene: 'bridge' }
-                ]
-            },
-            knightsDefeated: {
-                text: "Che tu li abbia affrontati o evitati, i cavalieri non sono più un problema. Arrivi di fronte alla torre del drago, separata da te da un ponte di corda e legno marcio sospeso su un lago di lava.",
-                choices: [
-                    { text: "Prosegui verso il ponte.", nextScene: 'bridge' }
-                ]
-            },
-            bridge: {
-                text: "Il ponte scricchiola minacciosamente sotto i tuoi piedi. Il calore della lava sale fino a te.",
-                choices: [
-                    { text: "Attraversa con cautela, un passo alla volta.", nextScene: 'reachTower' },
-                    { text: "Corri a perdifiato per arrivare prima possibile.", nextScene: 'bridgeFail' }
-                ]
-            },
-            bridgeFail: {
-                text: "La tua fretta è fatale. Il ponte cede di schianto e precipiti nel fiume di lava sottostante. La missione finisce qui. FINE.",
-                choices: [
-                    { text: "Ricomincia l'avventura.", nextScene: 'start' }
-                ]
-            },
-            reachTower: {
-                text: "Con pazienza e nervi saldi, attraversi il ponte. Sei finalmente dentro la fortezza. In un'enorme sala, un gigantesco drago rosso dorme su un mucchio d'oro e ossa.",
-                choices: [
-                    { text: "Cerca di passare in silenzio.", nextScene: 'sneakPastDragon' },
-                    { text: "Affronta il drago direttamente.", nextScene: 'fightDragon' }
-                ]
-            },
-            sneakPastDragon: {
-                text: "Ti muovi come un'ombra, ma Ciuchino inciampa rumorosamente. Il drago si sveglia di soprassalto e lo mette all'angolo, pronto a incenerirlo!",
-                choices: [
-                    { text: "Crea un diversivo per salvare Ciuchino.", nextScene: 'donkeyDistracts' },
-                    { text: "Abbandona Ciuchino e corri alla torre.", nextScene: 'abandonDonkey' }
-                ]
-            },
-            fightDragon: {
-                text: "Decidi di affrontare la bestia. Il drago ti vede e scatena una vampata di fiamme contro di te!",
-                choices: [
-                    { text: "Usa uno scudo di metallo per deviare il fuoco.", nextScene: 'dragonNeutralized' },
-                    { text: "Prova a colpirlo a mani nude.", nextScene: 'dragonWin' }
-                ]
-            },
-            dragonWin: {
-                text: "Sei forte, ma non a prova di fuoco. Il drago ti sconfigge facilmente. Sei diventato parte del suo tesoro... carbonizzato. FINE.",
-                choices: [
-                    { text: "Ricomincia l'avventura.", nextScene: 'start' }
-                ]
-            },
-            donkeyDistracts: {
-                text: "Mentre il drago (o meglio, la dragonessa) è... affascinata dalle lusinghe di Ciuchino, hai via libera per salire in cima alla torre più alta.",
-                choices: [
-                    { text: "Sali a salvare la principessa.", nextScene: 'saveFiona' }
-                ]
-            },
-            abandonDonkey: {
-                text: "Senza l'aiuto di Ciuchino, riesci a raggiungere Fiona, ma la dragonessa infuriata vi blocca la via d'uscita. Siete intrappolati per sempre. FINE.",
-                choices: [
-                    { text: "Ricomincia l'avventura.", nextScene: 'start' }
-                ]
-            },
-            dragonNeutralized: {
-                text: "Con astuzia, usi lo scudo per deviare le fiamme e riesci a far impigliare la catena del drago attorno a un pilastro, intrappolandolo. La via è libera.",
-                choices: [
-                    { text: "Sali a salvare la principessa.", nextScene: 'saveFiona' }
-                ]
-            },
-            saveFiona: {
-                text: "Nella stanza più alta della torre trovi la principessa Fiona. È sorpresa di vedere un orco come suo salvatore, ma non ha tempo per le formalità. Insieme, fuggite dalla torre.",
-                choices: [
-                    { text: "Inizia il viaggio di ritorno verso Duloc.", nextScene: 'returnJourney' }
-                ]
-            },
-            returnJourney: {
-                text: "Durante il viaggio di ritorno, inizi a conoscere meglio Fiona e, contro ogni previsione, nasce un legame. Una sera, al tramonto, lei si comporta in modo strano e si nasconde in un vecchio mulino.",
-                choices: [
-                    { text: "Rispetta la sua privacy e aspetta fuori.", nextScene: 'ignoreSecret' },
-                    { text: "Sei curioso, vai a vedere cosa nasconde.", nextScene: 'discoverSecret' }
-                ]
-            },
-            ignoreSecret: {
-                text: "Decidi di non impicciarti. La mattina dopo, riprendete il cammino e arrivate a Duloc. Non hai mai scoperto il suo segreto.",
-                choices: [
-                    { text: "Consegna Fiona a Farquaad come da accordo.", nextScene: 'badEnding' }
-                ]
-            },
-            discoverSecret: {
-                text: "Entri nel mulino e scopri il segreto di Fiona: una maledizione la trasforma in un'orchessa ogni notte. Ciuchino ti fa capire che solo il bacio del vero amore può spezzare l'incantesimo e che forse, quel vero amore, sei tu.",
-                choices: [
-                    { text: "Corri a Duloc per fermare il matrimonio!", nextScene: 'goodEndingPath' },
-                    { text: "Inorridito, la porti da Farquaad il prima possibile.", nextScene: 'badEnding' }
-                ]
-            },
-            badEnding: {
-                text: "Consegni Fiona a Lord Farquaad. Lui, in cambio, ti restituisce l'atto di proprietà della tua palude. Sei tornato a casa, da solo. La palude è finalmente silenziosa. Ma ti senti più solo di prima. FINE.",
-                choices: [
-                    { text: "Ricomincia per un finale migliore.", nextScene: 'start' }
-                ]
-            },
-            goodEndingPath: {
-                text: "Capisci di amare Fiona. Corri a Duloc e interrompi il matrimonio appena in tempo, dichiarando i tuoi sentimenti davanti a tutti.",
-                choices: [
-                    { text: "Bacia Fiona per spezzare l'incantesimo.", nextScene: 'trueLoveKiss' }
-                ]
-            },
-            trueLoveKiss: {
-                text: "Il tuo bacio spezza l'incantesimo. Fiona rimane un'orchessa, la sua vera forma d'amore. Dopo aver sistemato Farquaad, tornate insieme alla palude. Ora non sei più solo. Hai riconquistato la tua casa e hai trovato l'amore. VIVRETE PER SEMPRE FELICI E CONTENTI!",
-                choices: [
-                    { text: "Gioca di nuovo!", nextScene: 'start' }
-                ]
-            }
-        };
+        let state = {};
 
         function startGame() {
-            showScene('start');
+            state = {};
+            showStoryNode(1);
         }
 
-        function showScene(sceneKey) {
-            const scene = story[sceneKey];
-            if (!scene) {
-                console.error(`Scena non trovata: ${sceneKey}`);
-                return;
-            }
+        function showStoryNode(storyNodeId) {
+            const storyNode = storyNodes.find(node => node.id === storyNodeId);
+            storyTextElement.innerHTML = storyNode.text;
 
-            storyTextElement.innerText = scene.text;
-            
             while (choicesElement.firstChild) {
                 choicesElement.removeChild(choicesElement.firstChild);
             }
 
-            scene.choices.forEach(choice => {
-                const button = document.createElement('button');
-                button.innerText = choice.text;
-                button.classList.add('choice-btn');
-                button.addEventListener('click', () => showScene(choice.nextScene));
-                choicesElement.appendChild(button);
-            });
+            if (storyNode.choices) {
+                storyNode.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.innerText = choice.text;
+                    button.classList.add('choice-btn');
+                    button.addEventListener('click', () => selectChoice(choice));
+                    choicesElement.appendChild(button);
+                });
+            }
         }
+
+        function selectChoice(choice) {
+            const nextStoryNodeId = choice.nextId;
+            if (nextStoryNodeId <= 0) {
+                return startGame();
+            }
+            state = Object.assign(state, choice.setState);
+            showStoryNode(nextStoryNodeId);
+        }
+
+        const storyNodes = [
+            {
+                id: 1,
+                text: "La tua palude, un tempo un'oasi di tranquillità, è stata invasa da un'orda chiassosa di creature magiche esiliate dal perfido Lord Farquaad. La pace è solo un lontano ricordo. Cosa fai?",
+                choices: [
+                    {
+                        text: "Vai a Duloc per parlare con Lord Farquaad.",
+                        nextId: 2
+                    },
+                    {
+                        text: "Provi a scacciare le creature da solo.",
+                        nextId: 100
+                    }
+                ]
+            },
+            {
+                id: 100,
+                text: "Nonostante i tuoi ruggiti più spaventosi e le tue minacce più orchesche, le creature sono troppe e disperate. Ti ignorano, continuando a infestare la tua casa. La frustrazione cresce.",
+                choices: [
+                    {
+                        text: "Ti arrendi e vai a Duloc.",
+                        nextId: 2
+                    },
+                    {
+                        text: "Costruisci una recinzione più alta.",
+                        nextId: 101
+                    }
+                ]
+            },
+            {
+                id: 101,
+                text: "La recinzione non serve a nulla contro chi può volare, scavare o teletrasportarsi. La tua palude è persa. <br><br><span class='ending'>FINALE NEGATIVO:</span> Hai perso la tua casa per sempre.",
+                choices: [
+                    {
+                        text: "Ricomincia l'avventura",
+                        nextId: -1
+                    }
+                ]
+            },
+            {
+                id: 2,
+                text: "Arrivi al castello di Duloc. Dopo aver sbaragliato le guardie in un torneo, ti trovi faccia a faccia con Lord Farquaad. Ti propone un patto: salverai la Principessa Fiona da una torre custodita da un drago, e lui ti restituirà la palude.",
+                choices: [
+                    {
+                        text: "Accetti l'accordo. La palude vale bene una missione.",
+                        nextId: 3
+                    },
+                    {
+                        text: "Rifiuti. Non sei il galoppino di nessuno.",
+                        nextId: 102
+                    }
+                ]
+            },
+            {
+                id: 102,
+                text: "Rifiuti sdegnosamente. Farquaad, offeso, ti fa arrestare. Passi il resto dei tuoi giorni nelle prigioni di Duloc mentre la tua palude rimane un caotico campo profughi. <br><br><span class='ending'>FINALE NEGATIVO:</span> La prigione non è come la palude.",
+                choices: [
+                    {
+                        text: "Ricomincia l'avventura",
+                        nextId: -1
+                    }
+                ]
+            },
+            {
+                id: 3,
+                text: "Accetti la missione. Accanto a te c'è Ciuchino, un asino parlante che hai incontrato lungo la via e che ora è il tuo... 'nobile destriero'. Il vostro viaggio vi porta in una foresta oscura, dove sentite il rumore di armature. Sono i cavalieri di Farquaad, probabilmente messi lì per 'testarti'.",
+                choices: [
+                    {
+                        text: "Li affronti a testa bassa. Sei un orco!",
+                        nextId: 4
+                    },
+                    {
+                        text: "Cerchi un sentiero alternativo per evitarli.",
+                        nextId: 5
+                    }
+                ]
+            },
+            {
+                id: 4,
+                text: "Con la forza bruta e l'aiuto inaspettatamente efficace di Ciuchino, sconfiggi facilmente i cavalieri. La strada ora è libera. Proseguite verso la vostra destinazione: la torre del drago.",
+                choices: [
+                    {
+                        text: "Continua il viaggio",
+                        nextId: 6
+                    }
+                ]
+            },
+            {
+                id: 5,
+                text: "La tua conoscenza della natura ti permette di trovare un sentiero nascosto tra rovi e fango. Aggirate i cavalieri senza essere visti, risparmiando tempo ed energie. Proseguite verso la vostra destinazione: la torre del drago.",
+                choices: [
+                    {
+                        text: "Continua il viaggio",
+                        nextId: 6
+                    }
+                ]
+            },
+            {
+                id: 6,
+                text: "Finalmente arrivate: un'altissima torre circondata da un fossato di lava bollente. Un enorme drago rosso sorveglia l'ingresso. Il piano è cruciale.",
+                choices: [
+                    {
+                        text: "Attiri il drago in campo aperto per combatterlo.",
+                        nextId: 103
+                    },
+                    {
+                        text: "Usi Ciuchino come esca per distrarre il drago.",
+                        nextId: 7
+                    }
+                ]
+            },
+            {
+                id: 103,
+                text: "Il drago è immenso e il suo fuoco incinera ogni cosa. Nonostante il tuo coraggio, le fiamme sono troppo per te. <br><br><span class='ending'>FINALE NEGATIVO:</span> Sei diventato un orco arrosto.",
+                choices: [
+                    {
+                        text: "Ricomincia l'avventura",
+                        nextId: -1
+                    }
+                ]
+            },
+            {
+                id: 7,
+                text: "Con tua grande sorpresa, Ciuchino non viene mangiato. Anzi, con le sue chiacchiere riesce a... sedurre la dragonessa! Mentre lei è distratta, tu entri nella torre e raggiungi la stanza più alta.",
+                choices: [
+                    {
+                        text: "Entra nella stanza della principessa",
+                        nextId: 8
+                    }
+                ]
+            },
+            {
+                id: 8,
+                text: "Trovi la Principessa Fiona. Si aspetta il bacio del vero amore da un principe azzurro, non di essere trascinata via da un orco con un elmo. È un po' delusa.",
+                choices: [
+                    {
+                        text: "Ti togli l'elmo e le mostri chi sei.",
+                        nextId: 9
+                    },
+                    {
+                        text: "La prendi in spalla senza tante cerimonie.",
+                        nextId: 9
+                    }
+                ]
+            },
+            {
+                id: 9,
+                text: "Siete fuori dalla torre. Fiona è sorpresa e un po' scontrosa, ma vi segue. Inizia il lungo viaggio di ritorno verso Duloc. La via è lunga e il sole sta per tramontare.",
+                choices: [
+                    {
+                        text: "Vi accampate per la notte in un mulino abbandonato.",
+                        setState: { discoveredSecret: true },
+                        nextId: 10
+                    },
+                    {
+                        text: "Forzi la marcia per arrivare a Duloc il prima possibile.",
+                        setState: { discoveredSecret: false },
+                        nextId: 11
+                    }
+                ]
+            },
+            {
+                id: 10,
+                text: "Durante la notte, noti che Fiona si è nascosta. La segui e scopri il suo segreto: al calar del sole, una maledizione la trasforma in un'orchessa. Ora capisci la sua fretta e la sua angoscia.",
+                choices: [
+                    {
+                        text: "Le dici che per te non cambia nulla.",
+                        setState: { relationship: 'good' },
+                        nextId: 12
+                    },
+                    {
+                        text: "Reagisci con sorpresa, chiamandola 'mostro'.",
+                        setState: { relationship: 'bad' },
+                        nextId: 104
+                    }
+                ]
+            },
+            {
+                id: 11,
+                text: "Arrivate alle porte di Duloc senza aver fatto pause. Non hai scoperto il segreto di Fiona e la tensione tra voi è palpabile. Lord Farquaad vi attende.",
+                choices: [
+                    {
+                        text: "Consegna Fiona e reclama la palude.",
+                        nextId: 13
+                    }
+                ]
+            },
+            {
+                id: 12,
+                text: "Le tue parole gentili la colpiscono. Per la prima volta, qualcuno l'ha accettata per quello che è. Un legame profondo nasce tra voi. Il giorno dopo, arrivate a Duloc, ma le cose sono cambiate.",
+                choices: [
+                    {
+                        text: "Porta Fiona da Farquaad, come da accordo.",
+                        nextId: 14
+                    }
+                ]
+            },
+            {
+                id: 104,
+                text: "Le tue parole la feriscono profondamente. Con il cuore spezzato, Fiona fugge nella notte. Hai fallito la missione e perso la possibilità di riavere la tua palude. <br><br><span class='ending'>FINALE NEGATIVO:</span> Le parole fanno più male della spada.",
+                choices: [
+                    {
+                        text: "Ricomincia l'avventura",
+                        nextId: -1
+                    }
+                ]
+            },
+            {
+                id: 13,
+                text: "Lord Farquaad prende con sé Fiona e ti consegna l'atto di proprietà della palude, ora libera da ogni creatura magica. La missione è compiuta. Fiona ti lancia uno sguardo pieno di delusione prima di essere portata via.",
+                choices: [
+                    {
+                        text: "Torni alla tua palude, finalmente solo.",
+                        nextId: 200
+                    },
+                    {
+                        text: "Senti che stai facendo un errore. La solitudine non è ciò che vuoi.",
+                        nextId: 15
+                    }
+                ]
+            },
+             {
+                id: 14,
+                text: "Consegnate Fiona a Farquaad, che annuncia immediatamente il loro matrimonio. Vedendo il suo disprezzo per lei e ricordando il vostro legame, capisci che non puoi lasciarla con lui.",
+                choices: [
+                    {
+                        text: "Interrompi il matrimonio!",
+                        nextId: 15
+                    }
+                ]
+            },
+            {
+                id: 15,
+                text: "Irrompi al matrimonio! Dichiari i tuoi sentimenti per Fiona, che, incoraggiata, rivela la sua forma di orchessa a tutti. Farquaad, disgustato, ordina di imprigionarvi entrambi.",
+                choices: [
+                    {
+                        text: "Lotta per il tuo amore!",
+                        nextId: 16
+                    }
+                ]
+            },
+            {
+                id: 16,
+                text: "In quel momento, la dragonessa (ancora innamorata di Ciuchino) sfonda una vetrata e ingoia Lord Farquaad in un sol boccone! La folla esulta. Tu e Fiona vi scambiate il bacio del vero amore.",
+                choices: [
+                    {
+                        text: "Vivi per sempre felice e contento.",
+                        nextId: 300
+                    }
+                ]
+            },
+            {
+                id: 200,
+                text: "Torni alla tua palude. È silenziosa. Vuota. Proprio come volevi. Ma la pace che cercavi assomiglia molto alla solitudine. <br><br><span class='ending'>FINALE agrodolce:</span> Hai ottenuto ciò che volevi, ma hai perso qualcosa di più importante.",
+                choices: [
+                    {
+                        text: "Ricomincia l'avventura",
+                        nextId: -1
+                    }
+                ]
+            },
+            {
+                id: 300,
+                text: "Il bacio spezza la maledizione... ma Fiona rimane un'orchessa, la sua vera forma. Siete entrambi perfetti così. Tornate alla palude per vivere felici e contenti, con tutti i vostri amici. <br><br><span class='ending'>FINALE MIGLIORE:</span> L'amore vince su tutto, anche sui pregiudizi.",
+                choices: [
+                    {
+                        text: "Gioca ancora",
+                        nextId: -1
+                    }
+                ]
+            }
+        ];
 
         startGame();
     </script>

@@ -342,7 +342,7 @@ if __name__ == "__main__":
                     print("Reflection Agent terminato senza una soluzione. Interruzione del processo.")
                     continue
             elif status == "error":
-                print(f"\n❌ Errore di sintassi PDDL rilevato. Tentativo di correzione {i+1}/{max_retries}...")
+                print(f"\nErrore di sintassi PDDL rilevato. Tentativo di correzione {i+1}/{max_retries}...")
                 print(message) # Mostra l'errore dettagliato all'utente
                 error_for_next_iteration = message
         else:
