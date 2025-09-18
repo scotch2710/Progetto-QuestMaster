@@ -170,52 +170,7 @@ def save_pddl_files(domain_pddl, problem_pddl, domain_filename="domain.pddl", pr
 
 
 # --- REFLECTION AGENT ---
-def reflection_agent(lore_text, domain_pddl, problem_pddl):
-    """Analizza il PDDL e propone modifiche, chiedendo conferma per rigenerare e ristampare il piano."""
-    model = genai.GenerativeModel('gemini-2.5-pro')
-    user_input = ""
-    while True:
-        prompt = f"""
-        Sei un Reflection Agent. Analizza e proponi correzioni al PDDL.
 
-        Lore:
-        {lore_text}
-
-        Dominio:
-        {domain_pddl}
-
-        Problema:
-        {problem_pddl}
-
-        L'utente ha detto finora: {user_input}
-
-        Indica cosa cambiare per ottenere un piano valido. 
-        Rispondi con le modifiche proposte e attendi che l'utente scriva 'conferma' per applicarle.
-        """
-        response = model.generate_content(prompt)
-        print("\n--- PROPOSTA DEL REFLECTION AGENT ---")
-        print(response.text)
-
-        user_input = input("\nScrivi 'conferma' per applicare le modifiche, 'exit' per uscire, o commenta: ")
-        if user_input.strip().lower() == "exit":
-            print("Chiusura del Reflection Agent.")
-            break
-        elif user_input.strip().lower() == "conferma":
-            print("\nRigenero il PDDL con le modifiche proposte...")
-            new_pddl = generate_pddl_from_lore(lore_text, domain_pddl, problem_pddl)
-            if new_pddl:
-                domain_pddl, problem_pddl = new_pddl
-                save_pddl_files(domain_pddl, problem_pddl)
-                print("\n--- NUOVO PIANO ---")
-                result = test_pddl.check_pddl()
-                if not result:
-                    print("Il nuovo PDDL non produce ancora un piano valido.")
-                else:
-                    print("Piano valido trovato!")
-            else:
-                print("Errore durante la rigenerazione del PDDL.")
-        else:
-            print("Ok, aggiorno il contesto con il tuo input.")
 
 def start_reflection_agent(lore_text, domain_pddl, problem_pddl, domain_example, problem_example):
     """
