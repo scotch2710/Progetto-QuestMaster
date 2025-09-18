@@ -1,53 +1,44 @@
-(define (problem shrek_reclaims_the_swamp)
-  (:domain shrek_duloc_quest)
+(define (problem riconquistare_la_palude)
+  (:domain avventura_orco_corretto)
 
-  ; --- OGGETTI ---
-  ; Istanze specifiche di personaggi, luoghi e guardiani presenti in questa storia.
+  ; Oggetti: istanze specifiche dei tipi definiti nel dominio.
   (:objects
-    shrek - salvatore
-    ciuchino - accompagnatore
-    fiona - da_salvare
-    farquaad - mandante
+    shrek    - salvatore
+    ciuchino - compagno
+    fiona    - da_salvare
+    farquaad - governante
+    drago_femmina - guardiano
 
-    palude_di_shrek - palude
-    foresta_perigliosa - territorio_pericoloso
-    torre_del_drago - torre
-    castello_di_duloc - castello
-
-    draghessa - guardiano
+    palude foresta_oscura duloc torre_del_drago - luogo
   )
 
-  ; --- STATO INIZIALE (INIT) ---
-  ; La configurazione del mondo all'inizio della storia.
+  ; Stato iniziale del mondo: come sono le cose all'inizio della storia.
   (:init
-    ; Posizione iniziale dei personaggi
-    (si_trova_a shrek palude_di_shrek)
-    (si_trova_a ciuchino palude_di_shrek)
+    ; --- Posizioni Iniziali ---
+    (si_trova_a shrek palude)
+    ; Ciuchino si trova nella foresta, dove Shrek lo incontrerà.
+    (si_trova_a ciuchino foresta_oscura) 
+    (si_trova_a farquaad duloc)
     (si_trova_a fiona torre_del_drago)
-    (si_trova_a farquaad castello_di_duloc)
+    (si_trova_a drago_femmina torre_del_drago)
 
-    ; Stato iniziale dei luoghi e degli ostacoli
-    (prigioniera_in fiona torre_del_drago)
-    (fa_la_guardia draghessa torre_del_drago)
-    (palude_occupata palude_di_shrek)
+    ; --- Connessioni tra Luoghi (Mappa del Mondo) ---
+    (connessi palude foresta_oscura)
+    (connessi foresta_oscura palude)
+    (connessi foresta_oscura duloc)
+    (connessi duloc foresta_oscura)
+    (connessi foresta_oscura torre_del_drago)
+    (connessi torre_del_drago foresta_oscura)
 
-    ; Accordo tra Shrek e Farquaad
-    (accordo_stretto shrek farquaad)
-
-    ; Mappa del mondo (connessioni simmetriche)
-    (connessi palude_di_shrek foresta_perigliosa)
-    (connessi foresta_perigliosa palude_di_shrek)
-    
-    (connessi foresta_perigliosa torre_del_drago)
-    (connessi torre_del_drago foresta_perigliosa)
-
-    (connessi torre_del_drago castello_di_duloc)
-    (connessi castello_di_duloc torre_del_drago)
+    ; --- Stato Iniziale della Missione ---
+    (creature_nella_palude) ; Il problema che dà inizio a tutto.
   )
 
-  ; --- OBIETTIVO (GOAL) ---
-  ; Lo stato finale che il planner deve raggiungere.
-  (:goal (and
-    (missione_completata)
-  ))
+  ; Obiettivo finale: lo stato del mondo che vogliamo raggiungere.
+  (:goal
+    (and
+      ; L'obiettivo finale di Shrek è riavere la sua palude tranquilla.
+      (not (creature_nella_palude))
+    )
+  )
 )
